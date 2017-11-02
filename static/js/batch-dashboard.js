@@ -23,6 +23,13 @@ $(document).ready(function() {
         socket.emit('my_event', {data: 'I\'m connected!'});
     });
 
+
+
+
+    socket.on('my_response', function(msg) {
+         $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+     });
+
     socket.on('some event', function(msg) {
         console.log("hi");
         $('#log').append('<br>' + $('<div/>').text('Received from OOB: ' + msg.data).html());
@@ -31,8 +38,10 @@ $(document).ready(function() {
     // The callback function is invoked whenever the server emits data
     // to the client. The data is then displayed in the "Received"
     // section of the page.
-    socket.on('my_response', function(msg) {
-        $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+    socket.on('job_info', function(msg) {
+        console.log("got a message!");
+        console.log(msg);
+        $('#log').append('<br>' + $('<div/>').text('Job ID: ' + msg.job_id + ', state: ' + msg.job_status).html());
     });
 
     // Interval function that tests message latency by sending a "ping"

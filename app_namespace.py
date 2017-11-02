@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from threading import Lock
 import json
+import datetime
 import boto3
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, \
@@ -20,7 +21,8 @@ thread = None
 thread_lock = Lock()
 
 # FIXME move this to config:
-QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/344850189907/batch-events"
+# QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/344850189907/batch-events" # scicomp
+QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/064561331775/batch-dashboard" # hse
 
 def background_thread():
     """Example of how to send server generated events to clients."""
@@ -35,9 +37,16 @@ def background_thread():
                 print("Got message")
                 print(message['Body'])
                 message_obj = json.loads(message['Body'])
-                socketio.emit('my_response', message_obj, namespace='/test')
-                sqs.delete_message(QueueUrl=QUEUE_URL,
-                                   ReceiptHandle=message['ReceiptHandle'])
+                if 'detail' in message_obj:
+                    detail = message_obj['detail']
+                    message_to_send = dict(job_id=detail['jobId'], job_name=detail['jobName'],
+                                           job_queue=detail['jobQueue'].split("/")[-1],
+                                           job_status=detail['status'])
+                    print("Passing message to webpage:")
+                    print(message_to_send)
+                    socketio.emit('job_info', message_to_send, namespace='/test')
+                    sqs.delete_message(QueueUrl=QUEUE_URL,
+                                       ReceiptHandle=message['ReceiptHandle'])
         socketio.sleep(1)
         # socketio.sleep(10)
         # count += 1
@@ -57,10 +66,12 @@ def index():
     queue_table_data = util.get_queue_summary(info)
     envs = util.get_compute_environment_table()
     jobs = util.get_job_table(info)
+    timestamp = datetime.datetime.now().isoformat()
     return render_template('index.html', async_mode=socketio.async_mode,
                            queue_summary_table=queue_table_data['data'],
                            env_table=envs['data'],
-                           job_table=jobs['data'])
+                           job_table=jobs['data'],
+                           timestamp=timestamp)
 
 
 class MyNamespace(Namespace):
