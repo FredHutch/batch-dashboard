@@ -1,5 +1,9 @@
 $(document).ready(function() {
 
+    var states = ['SUBMITTED', 'PENDING', 'RUNNABLE', 'STARTING',
+              'RUNNING', 'FAILED', 'SUCCEEDED'];
+
+
     // var queueTable = $('#queue_summary_table').DataTable();
     var queueTable = $('#queue_summary_table').DataTable( {
       select: {
