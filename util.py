@@ -87,5 +87,5 @@ def get_job_table(info):
                 row.append(job['jobName'])
                 row.append(state)
                 out.append(row)
-    outdict=dict(data=out)
+    outdict = dict(data=out)
     return outdict
