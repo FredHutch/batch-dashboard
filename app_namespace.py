@@ -45,6 +45,11 @@ def background_thread():
                     print("Passing message to webpage:")
                     print(message_to_send)
                     socketio.emit('job_info', message_to_send, namespace='/test')
+                    # NOTE that deleting a message means nobody else can see it,
+                    # so if this app is running in 2 places (dev and production)
+                    # this could screw things up. Not sure what the best solution
+                    # is...if we don't delete messages, we will need to keep track
+                    # of which ones we have already seen.
                     sqs.delete_message(QueueUrl=QUEUE_URL,
                                        ReceiptHandle=message['ReceiptHandle'])
         socketio.sleep(1)
