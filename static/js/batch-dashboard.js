@@ -1,8 +1,39 @@
 $(document).ready(function() {
 
-    $('#queue_summary_table').DataTable();
-    $('#comp_env_table').DataTable();
-    $('#job_table').DataTable();
+    // var queueTable = $('#queue_summary_table').DataTable();
+    var queueTable = $('#queue_summary_table').DataTable( {
+      select: {
+          style: 'os',
+          items: 'cells'
+      }
+    } );
+    var envTable = $('#comp_env_table').DataTable();
+    var jobTable = $('#job_table').DataTable();
+
+    // $('a').click(function(event) {
+    //   console.log('howdy');
+    //   // console.log('event.target ' + event.target);
+    //   // console.log('event.target.attr("id") ' + event.target.attr('id'));
+    //   selector = "#" + event.target.id;
+    //   // console.log( + event.target.id);
+    //   // console.log($(this).attr('id'));
+    // });
+
+    $('#queue_summary_table tbody').on( 'click', 'td', function () {
+      console.log('ahahahah');
+        console.log( queueTable.cell( this ).data() );
+    } );
+
+
+    // $('.dataTable').on('click', 'tbody td', function() {
+    //   console.log("caught click on tbody td");
+    //
+    //   //get textContent of the TD
+    //   console.log('TD cell textContent : ', $.trim(this.textContent));
+    //   console.log('API row values : ', table.row(this).data());
+    //   //get the value of the TD using the API (doesn't work)
+    //   // console.log('value by API : ', table.cell({ row: this.parentNode.rowIndex, column : this.cellIndex }).data());
+    // });
 
     // Use a "/test" namespace.
     // An application can open a connection on multiple namespaces, and
