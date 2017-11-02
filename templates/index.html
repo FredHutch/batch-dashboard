@@ -28,9 +28,21 @@
     </thead>
     <tbody>
     {% for row in queue_summary_table %}
-      <tr>
+      <tr class="queue_row">
         {% for item in row %}
-          <td>{{ item }} </td>
+          <td>
+            {% if loop.index == 1 %}
+              <a class="queue" href="">
+            {% elif  loop.index > 2 %}
+              <a class="queue_jobs_by_status" href="">
+            {% endif %}
+            {{ item }}
+            {% if loop.index == 1 %}
+              </a>
+            {% elif loop.index > 2 %}
+              </a>
+            {% endif %}
+          </td>
         {% endfor %}
       </tr>
     {% endfor %}
@@ -52,9 +64,17 @@
   </thead>
   <tbody>
     {% for row in env_table %}
-      <tr>
+      <tr class="env_row">
         {% for item in row %}
-          <td>{{ item }}</td>
+          <td>
+            {% if loop.index == 1 %}
+              <a class="compute_environment" href="">
+            {% endif %}
+            {{ item }}
+            {% if loop.index == 1 %}
+              </a>
+            {% endif %}
+          </td>
         {% endfor %}
       </tr>
     {% endfor %}
@@ -76,9 +96,17 @@
   </thead>
   <tbody>
     {% for row in job_table %}
-      <tr>
+      <tr class="job_row">
         {% for item in row %}
-          <td>{{ item }}</td>
+          <td>
+            {% if loop.index == 2 %}
+              <a class="job_id" href="">
+            {% endif %}
+            {{ item }}
+            {% if loop.index == 2 %}
+              </a>
+            {% endif %}
+          </td>
         {% endfor %}
       </tr>
     {% endfor %}
