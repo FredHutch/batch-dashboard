@@ -6,6 +6,8 @@ from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 
+import util
+
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
@@ -51,7 +53,14 @@ def send():
 
 @app.route('/')
 def index():
-    return render_template('index.html', async_mode=socketio.async_mode)
+    info = util.get_all_job_info()
+    queue_table_data = util.get_queue_summary(info)
+    envs = util.get_compute_environment_table()
+    jobs = util.get_job_table(info)
+    return render_template('index.html', async_mode=socketio.async_mode,
+                           queue_summary_table=queue_table_data['data'],
+                           env_table=envs['data'],
+                           job_table=jobs['data'])
 
 
 class MyNamespace(Namespace):
