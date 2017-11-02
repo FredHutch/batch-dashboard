@@ -38,3 +38,14 @@ def do_paginated_batch_operation(batch, operation, wanted_part, args=None):
             args['nextToken'] = result['nextToken']
         else:
             return out
+
+def get_queue_summary(info):
+    "get queue summary as table data"
+    out = []
+    for queue in info:
+        row = []
+        row.append(queue['queue_name'])
+        row.append(queue['queue']['priority'])
+        row.append()
+    outdict = dict(data=out)
+    return outdict
