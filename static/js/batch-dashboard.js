@@ -73,6 +73,16 @@ $(document).ready(function() {
     // The callback function is invoked whenever the server emits data
     // to the client. The data is then displayed in the "Received"
     // section of the page.
+    /*
+    When a message comes in, we need to do the following:
+    - Does the job already exist? If not, add a row to the job table.
+      If it does exist, check the new status. Is it 'later' than the previous status?
+      If not, ignore the message.
+      If it's a valid message, fade in (and out) a 'flash'-like message
+      Update the job table row with new status.
+      Decrement previous status in queue table (if new status > SUBMITTED)
+      Increment new status in queue table.
+    */
     socket.on('job_info', function(msg) {
         console.log("got a message!");
         console.log(msg);
