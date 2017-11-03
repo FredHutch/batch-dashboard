@@ -1,0 +1,22 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  override:
+    # - docker build --build-arg EMAIL_RECIPIENT="$EMAIL_RECIPIENT" --build-arg SECRET_KEY="$SECRET_KEY" --build-arg STORCRAWL_DB_URL="$STORCRAWL_DB_URL" -t $DOCKER_HUB_HOST/$DOCKER_USER/storage-hotspots:$CIRCLE_SHA1 .
+    - curl -LO https://github.com/rancher/rancher-compose/releases/download/v0.12.5/rancher-compose-linux-amd64-v0.12.5.tar.gz
+    - tar zxf rancher-compose-linux-amd64-v0.12.5.tar.gz
+
+test:
+  override:
+          - echo write some unit tests.
+
+
+deployment:
+  master:
+    branch: master
+    commands:
+      # - docker tag $DOCKER_HUB_HOST/$DOCKER_USER/storage-hotspots:$CIRCLE_SHA1 $DOCKER_HUB_HOST/$DOCKER_USER/storage-hotspots:latest
+      # - docker login -e fredhutch@fhcrc.org -u $DOCKER_USER -p "$DOCKER_PASS" $DOCKER_HUB_HOST && docker push $DOCKER_HUB_HOST/$DOCKER_USER/storage-hotspots:latest
+      - rancher-compose-v0.12.5/rancher-compose --project-name batch-dashboard --url https://ponderosa.fhcrc.org/v1/projects/1a38/stacks/1st60  --access-key $RANCHERAPI_ACCESSKEY --secret-key $RANCHERAPI_SECRETKEY up -d --pull --force-upgrade --confirm-upgrade storage-hotspots
