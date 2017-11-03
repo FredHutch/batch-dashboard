@@ -76,7 +76,8 @@ def index():
                            queue_summary_table=queue_table_data['data'],
                            env_table=envs['data'],
                            job_table=jobs['data'],
-                           timestamp=timestamp)
+                           timestamp=timestamp,
+                           states=util.STATES)
 
 
 class MyNamespace(Namespace):
