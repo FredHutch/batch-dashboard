@@ -35,7 +35,7 @@
             {% if loop.index == 1 %}
               <a id="{{item}}" class="queue" href="#">
             {% elif  loop.index > 2 %}
-              <a class="queue_jobs_by_status" href="#">
+              <a class="queue_jobs_by_status" id="{{row[0]}}_{{states[loop.index-3]}}" href="#">
             {% endif %}
             {{ item }}
             {% if loop.index == 1 %}
