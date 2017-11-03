@@ -21,6 +21,7 @@ thread = None
 thread_lock = Lock()
 
 # FIXME move this to config:
+# also set up a dev queue
 # QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/344850189907/batch-events" # scicomp
 QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/064561331775/batch-dashboard" # hse
 
@@ -45,11 +46,6 @@ def background_thread():
                     print("Passing message to webpage:")
                     print(message_to_send)
                     socketio.emit('job_info', message_to_send, namespace='/test')
-                    # NOTE that deleting a message means nobody else can see it,
-                    # so if this app is running in 2 places (dev and production)
-                    # this could screw things up. Not sure what the best solution
-                    # is...if we don't delete messages, we will need to keep track
-                    # of which ones we have already seen.
                     sqs.delete_message(QueueUrl=QUEUE_URL,
                                        ReceiptHandle=message['ReceiptHandle'])
         socketio.sleep(1)

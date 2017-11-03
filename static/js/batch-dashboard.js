@@ -1,8 +1,52 @@
 $(document).ready(function() {
 
+  // $("#inner-message").hide();
+
+  $("#myButton").click(function(){
+    console.log("hi");
+    showAlert({"job_name": "my job name", "job_status": "SUBMITTED"});
+  });
+
+    var showAlert = function(msg) {
+      console.log("showing alert");
+      $("#inner-message").html("Job " + msg.job_name + " has reached status " + msg.job_status + ".");
+      $("#inner-message").fadeTo(2000, 500).slideUp(500, function(){
+        $("#inner-message").slideUp(500);
+      });
+
+    }
+
     var states = ['SUBMITTED', 'PENDING', 'RUNNABLE', 'STARTING',
               'RUNNING', 'FAILED', 'SUCCEEDED'];
 
+
+    var crement = function(queue, status, increase) {
+      selector = "#" + queue + "_" + status;
+      num = parseInt($.trim($(selector).text()));
+      if (increase) {
+        num++;
+      } else {
+        num--;
+      }
+      $(selector).html(num.toString());
+
+    }
+
+    var increment = function(queue, status) {
+      crement(queue, status, true);
+    }
+
+    var decrement = function(queue, status) {
+      crement(queue, status, false);
+    }
+
+    var getCurrentStatus = function(jobId) {
+      return $.trim(jobTable.cell("#row_" + jobId, 3).data());
+    }
+
+    var setStatus = function(jobId, status) {
+      jobTable.cell("#row_" + jobId, 3).data(status).draw();
+    }
 
     // var queueTable = $('#queue_summary_table').DataTable();
     var queueTable = $('#queue_summary_table').DataTable( {
@@ -86,7 +130,39 @@ $(document).ready(function() {
     socket.on('job_info', function(msg) {
         console.log("got a message!");
         console.log(msg);
+        // TODO remove this:
         $('#log').append('<br>' + $('<div/>').text('Job ID: ' + msg.job_id + ', state: ' + msg.job_status).html());
+
+        jobId = msg.job_id;
+        newState = msg.job_status;
+        queue = msg.job_queue;
+        jobName = msg.job_name;
+
+        // check if this job is already in the jobs table:
+        len = jobTable.row("#row_" + jobId).length
+        if (len == 1) { // job exists
+          console.log("job already exists");
+          currentState = getCurrentStatus(jobId);
+          if (states.indexOf(currentState) >= states.indexOf(newState)) {
+            console.log("state " + newState + " is not newer than " + currentState + ", ignoring message...");
+            return;
+          }
+          decrement(queue, currentState);
+          setStatus(jobId, newState);
+        } else if (len == 0) { // job does not exist
+          console.log("new job, welcome!");
+          jobTable.row.add([
+            queue,
+            '<a id="' + jobId + '" js="true" class="job_id" href="#">' + jobId + '</a>',
+            jobName,
+            newState
+          ]).draw();
+          // increment cell in queue table
+        } else {
+          console.log("We should not be here, len is " + len + ".");
+        }
+        increment(queue, newState);
+        showAlert(msg);
     });
 
     // Interval function that tests message latency by sending a "ping"
