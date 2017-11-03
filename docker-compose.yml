@@ -1,21 +1,21 @@
 version: '2'
 services:
-  web:
+  batch-dashboard:
     image: ubuntu:16.04
     stdin_open: true
-    secrets:
-    - BATCH_DASHBOARD_AWS_ACCESS_KEY
-    - BATCH_DASHBOARD_AWS_REGION
-    - BATCH_DASHBOARD_QUEUE_URL
-    - BATCH_DASHBOARD_SECRET_KEY
+    # secrets:
+    # - BATCH_DASHBOARD_AWS_ACCESS_KEY
+    # - BATCH_DASHBOARD_AWS_REGION
+    # - BATCH_DASHBOARD_QUEUE_URL
+    # - BATCH_DASHBOARD_SECRET_KEY
     labels:
       io.rancher.container.pull_image: always
-secrets:
-  BATCH_DASHBOARD_AWS_ACCESS_KEY:
-    external: true
-  BATCH_DASHBOARD_AWS_REGION:
-    external: true
-  BATCH_DASHBOARD_QUEUE_URL:
-    external: true
-  BATCH_DASHBOARD_SECRET_KEY:
-    external: true
+# secrets:
+#   BATCH_DASHBOARD_AWS_ACCESS_KEY:
+#     external: true
+#   BATCH_DASHBOARD_AWS_REGION:
+#     external: true
+#   BATCH_DASHBOARD_QUEUE_URL:
+#     external: true
+#   BATCH_DASHBOARD_SECRET_KEY:
+#     external: true
