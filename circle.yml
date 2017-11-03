@@ -19,4 +19,4 @@ deployment:
     commands:
       # - docker tag $DOCKER_HUB_HOST/$DOCKER_USER/storage-hotspots:$CIRCLE_SHA1 $DOCKER_HUB_HOST/$DOCKER_USER/storage-hotspots:latest
       # - docker login -e fredhutch@fhcrc.org -u $DOCKER_USER -p "$DOCKER_PASS" $DOCKER_HUB_HOST && docker push $DOCKER_HUB_HOST/$DOCKER_USER/storage-hotspots:latest
-      - rancher-compose-v0.12.5/rancher-compose --project-name batch-dashboard --url https://ponderosa.fhcrc.org/v1/projects/1a38/stacks/1st60  --access-key $RANCHERAPI_ACCESSKEY --secret-key $RANCHERAPI_SECRETKEY up -d --pull --force-upgrade --confirm-upgrade storage-hotspots
+      - rancher-compose-v0.12.5/rancher-compose --project-name batch-dashboard --url https://ponderosa.fhcrc.org/v1/projects/1a38/stacks/1st60  --access-key $RANCHERAPI_ACCESSKEY --secret-key $RANCHERAPI_SECRETKEY up -d --pull --force-upgrade --confirm-upgrade batch-dashboard
