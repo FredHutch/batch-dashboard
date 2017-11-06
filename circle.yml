@@ -4,7 +4,7 @@ machine:
 
 dependencies:
   override:
-    # - docker build --build-arg EMAIL_RECIPIENT="$EMAIL_RECIPIENT" --build-arg SECRET_KEY="$SECRET_KEY" --build-arg STORCRAWL_DB_URL="$STORCRAWL_DB_URL" -t $DOCKER_HUB_HOST/$DOCKER_USER/storage-hotspots:$CIRCLE_SHA1 .
+    - docker build --build-arg AWS_DEFAULT_REGION="$AWS_DEFAULT_REGION" --build-arg AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" --build-arg AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" --build-arg APP_SECRET="$APP_SECRET" --build-arg QUEUE_URL="$QUEUE_URL" -t $DOCKER_HUB_HOST/$DOCKER_USER/batch-dashboard:$CIRCLE_SHA1 .
     - curl -LO https://github.com/rancher/rancher-compose/releases/download/v0.12.5/rancher-compose-linux-amd64-v0.12.5.tar.gz
     - tar zxf rancher-compose-linux-amd64-v0.12.5.tar.gz
 

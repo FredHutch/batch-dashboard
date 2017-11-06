@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from threading import Lock
 import json
+import os
+import sys
 import datetime
 import boto3
 from flask import Flask, render_template, session, request
@@ -15,15 +17,23 @@ import util
 async_mode = None
 
 app = Flask(__name__, static_url_path='')
-app.config['SECRET_KEY'] = 'secret!'
+
+required_env_vars = ['QUEUE_URL', 'APP_SECRET']
+notset = False
+for var in required_env_vars:
+    if not os.getenv(var):
+        notset = True
+        print("{} must be set!".format(var))
+if notset:
+    sys.exit(1)
+
+app.config['SECRET_KEY'] = os.getenv('APP_SECRET')
 socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 thread_lock = Lock()
 
-# FIXME move this to config:
-# also set up a dev queue
-# QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/344850189907/batch-events" # scicomp
-QUEUE_URL = "https://sqs.us-west-2.amazonaws.com/064561331775/batch-dashboard" # hse
+# FIXME - set up a dev queue
+QUEUE_URL = os.getenv('QUEUE_URL')
 
 def background_thread():
     """Example of how to send server generated events to clients."""
