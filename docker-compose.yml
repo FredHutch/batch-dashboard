@@ -1,13 +1,15 @@
 version: '2'
 services:
   batch-dashboard:
-    image: ubuntu:16.04
+    image: dockerimages.fhcrc.org/fredhutch/batch-dashboard:latest
     stdin_open: true
     # secrets:
     # - BATCH_DASHBOARD_AWS_ACCESS_KEY
     # - BATCH_DASHBOARD_AWS_REGION
     # - BATCH_DASHBOARD_QUEUE_URL
     # - BATCH_DASHBOARD_SECRET_KEY
+    ports:
+      - "8000:8000"
     labels:
       io.rancher.container.pull_image: always
 # secrets:

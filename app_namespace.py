@@ -50,9 +50,14 @@ def background_thread():
                 message_obj = json.loads(message['Body'])
                 if 'detail' in message_obj:
                     detail = message_obj['detail']
-                    message_to_send = dict(job_id=detail['jobId'], job_name=detail['jobName'],
-                                           job_queue=detail['jobQueue'].split("/")[-1],
-                                           job_status=detail['status'])
+                    try:
+                        message_to_send = dict(job_id=detail['jobId'], job_name=detail['jobName'],
+                                               job_queue=detail['jobQueue'].split("/")[-1],
+                                               job_status=detail['status'])
+                    except KeyError:
+                        sqs.delete_message(QueueUrl=QUEUE_URL,
+                                           ReceiptHandle=message['ReceiptHandle'])
+                        continue
                     print("Passing message to webpage:")
                     print(message_to_send)
                     socketio.emit('job_info', message_to_send, namespace='/test')
