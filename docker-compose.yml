@@ -1,6 +1,6 @@
 version: '2'
 services:
-  web:
+  batch-dashboard:
     image: dockerimages.fhcrc.org/fredhutch/batch-dashboard:latest
     stdin_open: true
     # secrets:
