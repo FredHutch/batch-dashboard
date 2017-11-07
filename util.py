@@ -111,3 +111,8 @@ def get_job_definition_table():
 def describe_queue(queue_name):
     "get info for one queue"
     return BATCH.describe_job_queues(jobQueues=[queue_name])['jobQueues'][0]
+
+def describe_env(env_name):
+    "get info for one compute environment"
+    return BATCH.describe_compute_environments(computeEnvironments=[env_name])\
+       ['computeEnvironments'][0]

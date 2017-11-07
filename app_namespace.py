@@ -104,6 +104,14 @@ def describe_queue():
     print(ret)
     return jsonify(ret)
 
+
+@app.route('/describe_env', methods=['GET'])
+def describe_env():
+    envname = request.args.get('env_name')
+    ret = util.describe_env(envname)
+    return jsonify(ret)
+
+
 class MyNamespace(Namespace):
     def on_my_event(self, message):
         session['receive_count'] = session.get('receive_count', 0) + 1

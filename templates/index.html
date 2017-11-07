@@ -64,6 +64,115 @@
 </div>
 
 
+{# compute environment modal #}
+<div class="modal fade" id="env_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="dialog_env_header">Compute environment details</h4>
+      </div>
+      <div class="modal-body">
+        <h3>Overview</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Compute environment name:</b></td>
+            <td align="left" id="dialog_env_name"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Compute environment ARN:</b></td>
+            <td align="left" id="dialog_env_arn"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Type:</b></td>
+            <td align="left" id="dialog_env_type"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Status:</b></td>
+            <td align="left" id="dialog_env_status"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>State:</b></td>
+            <td align="left" id="dialog_env_state"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Service role:</b></td>
+            <td align="left" id="dialog_env_service_role"></td>
+          </tr>
+        </table>
+
+        <h2>Compute Resources</h2>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Minimum vCPUs:</b></td>
+            <td align="left" id="dialog_env_minvcpus"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Desired vCPUs:</b></td>
+            <td align="left" id="dialog_env_desiredvcpus"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Maximum vCPUs:</b></td>
+            <td align="left" id="dialog_env_maxvcpus"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Instance types:</b></td>
+            <td align="left" id="dialog_env_vcpus"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Instance role:</b></td>
+            <td align="left" id="dialog_env_instancerole"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Spot fleet role:</b></td>
+            <td align="left" id="dialog_env_spotfleetrole"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>EC2 Keypair:</b></td>
+            <td align="left" id="dialog_env_keypair"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>AMI id:</b></td>
+            <td align="left" id="dialog_env_amiid"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>vpcId:</b></td>
+            <td align="left" id="dialog_env_vpcid"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Subnets:</b></td>
+            <td align="left" id="dialog_env_subnets"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Security Groups:</b></td>
+            <td align="left" id="dialog_env_securitygroups"></td>
+          </tr>
+
+        </table>
+
+
+
+
+
+        <h3>EC2 Tags</h3>
+
+        <table id="dialog_env_tag_table" class="paddingBetweenCols">
+          <tr>
+            <th>Name</th>
+            <th>Value</th>
+          </tr>
+        </table>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_env_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {# end modals #}
 

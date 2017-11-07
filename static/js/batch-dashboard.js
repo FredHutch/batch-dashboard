@@ -80,6 +80,25 @@ $(document).ready(function() {
     }); // end of click event handler for queues
 
 
+    // click event handler for compute environment table
+    // $('#queue_summary_table tbody').on( 'click', 'td', function (event) {
+    $(".compute_environment").click(function(event){
+      console.log("in click handler for compute environment");
+      $("#dialog_env_tag_table").find("tr:gt(0)").remove();
+      var id = $(event.target).attr('id');
+      $.getJSON( "/describe_env", { env_name: id} )
+        .done(function( obj ) {
+          console.log( "JSON Data: " +obj );
+          console.log(JSON.stringify(obj));
+          // populateEnvDialog(obj);
+        })
+        .fail(function( jqxhr, textStatus, error ) {
+          var err = textStatus + ", " + error;
+          console.log( "Request Failed: " + err );
+        });
+    }); // end of click event handler for compute environment table
+
+
     var populateQueueDialog = function(obj) {
       $("#dialog_queue_header").html("Queue " + obj['jobQueueName']);
       $("#dialog_queue_name").html(obj['jobQueueName']);
@@ -95,7 +114,51 @@ $(document).ready(function() {
       $("#queue_dialog").modal();
     }
 
-
+    var populateQueueDialog = function(obj) {
+      // env looks like this
+      /*
+      {
+         "computeEnvironmentArn":"arn:aws:batch:us-west-2:064561331775:compute-environment/r48-1Thd--0",
+         "computeEnvironmentName":"r48-1Thd--0",
+         "computeResources":{
+            "desiredvCpus":160,
+            "imageId":"ami-fd6dae85",
+            "instanceRole":"arn:aws:iam::064561331775:instance-profile/fh-pi-universal-batchrole",
+            "instanceTypes":[
+               "r4.8xlarge"
+            ],
+            "maxvCpus":2000,
+            "minvCpus":0,
+            "securityGroupIds":[
+               "sg-6c8e7911"
+            ],
+            "subnets":[
+               "subnet-d2ba0cb4"
+            ],
+            "tags":{
+               "Name":"r48-1Thd--0",
+               "billing_contact":"sminot@fredhutch.org",
+               "data_classification":"?",
+               "description":"Compute environment providing up to 2,000 vCPUs (ON DEMAND) with r4.8xlarge instances and 1Tb mounted at the root partition",
+               "grant_critical":"No",
+               "maintenance_window":"?",
+               "owner":"VIDD",
+               "project":"none",
+               "project_code":"none",
+               "public":"Yes",
+               "technical_contact":"sminot@fredhutch.org"
+            },
+            "type":"EC2"
+         },
+         "ecsClusterArn":"arn:aws:ecs:us-west-2:064561331775:cluster/r48-1Thd--0_Batch_4423f63d-9f3e-3d76-a7f1-f9b7cfbedd61",
+         "serviceRole":"arn:aws:iam::064561331775:role/fh-pi-universal-batchservice",
+         "state":"ENABLED",
+         "status":"VALID",
+         "statusReason":"ComputeEnvironment Healthy",
+         "type":"MANAGED"
+      }
+      */
+    }
 
     // Use a "/test" namespace.
     // An application can open a connection on multiple namespaces, and
