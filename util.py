@@ -107,3 +107,7 @@ def get_job_definition_table():
         out.append(row)
     return dict(data=out)
 #def do_paginated_batch_operation(operation, wanted_part, args=None):
+
+def describe_queue(queue_name):
+    "get info for one queue"
+    return BATCH.describe_job_queues(jobQueues=[queue_name])['jobQueues'][0]

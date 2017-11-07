@@ -8,10 +8,65 @@
     <!-- optional theme: -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-
+    <style>
+    .paddingBetweenCols td, th
+    {
+      padding:0 15px 0 15px;
+    }
+    </style>
 
 </head>
 <body>
+
+{# modals #}
+
+{# queue modal #}
+<div class="modal fade" id="queue_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="dialog_queue_header">Queue queueName</h4>
+      </div>
+      <div class="modal-body">
+        <h3>Overview</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Queue name: </b></td>
+            <td align="left" id="dialog_queue_name"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Queue state: </b></td>
+            <td align="left" id="dialog_queue_state"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Priority: </b></td>
+            <td align="left" id="dialog_queue_priority"></td>
+          </tr>
+        </table>
+
+        <h3>Compute Environments</h3>
+
+        <table id="dialog_queue_env_table" class="paddingBetweenCols">
+          <tr>
+            <th>Order</th>
+            <th>Compute environment</th>
+          </tr>
+        </table>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{# end modals #}
+
 
   <h1>AWS Batch Dashboard</h1>
 
@@ -168,8 +223,12 @@
 
     <div id="log" style="display: none;"></div>
 
+<p>&nbsp;</p>
 
-<p><a href="https://fredhutch.github.io/aws-batch-at-hutch-docs/">[Documentation for AWS Batch at Fred Hutch]</a></p>
+<p>
+  <a target="_blank" href="https://fredhutch.github.io/aws-batch-at-hutch-docs/">[Documentation for AWS Batch at Fred Hutch]</a> |
+  <a target="_blank" href="https://github.com/FredHutch/batch-dashboard">[Code/Report an Issue]</a>
+</p>
 
     <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js"></script>

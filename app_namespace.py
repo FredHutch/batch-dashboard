@@ -5,7 +5,7 @@ import os
 import sys
 import datetime
 import boto3
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, session, request, jsonify
 from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, \
     close_room, rooms, disconnect
 
@@ -93,6 +93,16 @@ def index():
                            timestamp=timestamp,
                            states=util.STATES)
 
+
+@app.route('/describe_queue', methods=['GET'])
+def describe_queue():
+    print(request.args)
+    qname = request.args.get('queue_name')
+    print(qname)
+    print("returning")
+    ret = util.describe_queue(qname)
+    print(ret)
+    return jsonify(ret)
 
 class MyNamespace(Namespace):
     def on_my_event(self, message):

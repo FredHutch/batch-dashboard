@@ -59,30 +59,43 @@ $(document).ready(function() {
     var jobTable = $('#job_table').DataTable();
     var jobDefTable = $("#job_def_table").DataTable();
 
-    // $('a').click(function(event) {
-    //   console.log('howdy');
-    //   // console.log('event.target ' + event.target);
-    //   // console.log('event.target.attr("id") ' + event.target.attr('id'));
-    //   selector = "#" + event.target.id;
-    //   // console.log( + event.target.id);
-    //   // console.log($(this).attr('id'));
-    // });
+    // click event handler for tables
 
-    $('#queue_summary_table tbody').on( 'click', 'td', function () {
-      console.log('ahahahah');
-        console.log( queueTable.cell( this ).data() );
-    } );
+    // click event handler for queue table
+    $('#queue_summary_table tbody').on( 'click', 'td', function (event) {
+      $("#dialog_queue_env_table").find("tr:gt(0)").remove();
+      var id = $(event.target).attr('id');
+      $.getJSON( "/describe_queue", { queue_name: id} )
+        .done(function( obj ) {
+          console.log( "JSON Data: " +obj );
+          console.log("State is " + obj['state']);
+          //alert(json);
+          populateQueueDialog(obj);
+          // alert(JSON.stringify(obj));
+        })
+        .fail(function( jqxhr, textStatus, error ) {
+          var err = textStatus + ", " + error;
+          console.log( "Request Failed: " + err );
+        });
+    }); // end of click event handler for queues
 
 
-    // $('.dataTable').on('click', 'tbody td', function() {
-    //   console.log("caught click on tbody td");
-    //
-    //   //get textContent of the TD
-    //   console.log('TD cell textContent : ', $.trim(this.textContent));
-    //   console.log('API row values : ', table.row(this).data());
-    //   //get the value of the TD using the API (doesn't work)
-    //   // console.log('value by API : ', table.cell({ row: this.parentNode.rowIndex, column : this.cellIndex }).data());
-    // });
+    var populateQueueDialog = function(obj) {
+      $("#dialog_queue_header").html("Queue " + obj['jobQueueName']);
+      $("#dialog_queue_name").html(obj['jobQueueName']);
+      $("#dialog_queue_state").html(obj['state']);
+      $("#dialog_queue_priority").html(obj['priority']);
+      for (i in obj['computeEnvironmentOrder']) {
+        var row = obj['computeEnvironmentOrder'][i];
+        var segs = row['computeEnvironment'].split('/');
+        var ceName = segs[segs.length -1];
+        var html = "<tr><td>" + row['order'] + " </td><td>" + ceName + "</td></tr>\n";
+        $("#dialog_queue_env_table").append(html);
+      }
+      $("#queue_dialog").modal();
+    }
+
+
 
     // Use a "/test" namespace.
     // An application can open a connection on multiple namespaces, and
