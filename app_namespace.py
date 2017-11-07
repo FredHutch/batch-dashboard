@@ -78,15 +78,18 @@ def send():
 
 @app.route('/')
 def index():
+    "main route"
     info = util.get_all_job_info()
     queue_table_data = util.get_queue_summary(info)
     envs = util.get_compute_environment_table()
     jobs = util.get_job_table(info)
+    jobdefs = util.get_job_definition_table()
     timestamp = datetime.datetime.now().isoformat()
     return render_template('index.html', async_mode=socketio.async_mode,
                            queue_summary_table=queue_table_data['data'],
                            env_table=envs['data'],
                            job_table=jobs['data'],
+                           job_def_table=jobdefs['data'],
                            timestamp=timestamp,
                            states=util.STATES)
 

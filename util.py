@@ -89,3 +89,21 @@ def get_job_table(info):
                 out.append(row)
     outdict = dict(data=out)
     return outdict
+
+def get_job_definition_table():
+    "get job definitions in table form"
+    jobdefs = do_paginated_batch_operation("describe_job_definitions",
+                                           "jobDefinitions")
+    jobdefs = sorted(jobdefs,
+                     key=lambda x: (x['jobDefinitionName'].lower(), -x['revision']))
+    out = []
+    for jobdef in jobdefs:
+        row = []
+        row.append(jobdef['jobDefinitionName'])
+        row.append(jobdef['revision'])
+        row.append(jobdef['containerProperties']['vcpus'])
+        row.append(jobdef['containerProperties']['memory'])
+        row.append(jobdef['containerProperties']['image'])
+        out.append(row)
+    return dict(data=out)
+#def do_paginated_batch_operation(operation, wanted_part, args=None):

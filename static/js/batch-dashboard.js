@@ -57,6 +57,7 @@ $(document).ready(function() {
     } );
     var envTable = $('#comp_env_table').DataTable();
     var jobTable = $('#job_table').DataTable();
+    var jobDefTable = $("#job_def_table").DataTable();
 
     // $('a').click(function(event) {
     //   console.log('howdy');
