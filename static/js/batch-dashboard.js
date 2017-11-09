@@ -88,9 +88,9 @@ $(document).ready(function() {
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_env", { env_name: id} )
         .done(function( obj ) {
-          console.log( "JSON Data: " +obj );
-          console.log(JSON.stringify(obj));
-          // populateEnvDialog(obj);
+          // console.log( "JSON Data: " +obj );
+          // console.log(JSON.stringify(obj));
+          populateEnvDialog(obj);
         })
         .fail(function( jqxhr, textStatus, error ) {
           var err = textStatus + ", " + error;
@@ -114,50 +114,40 @@ $(document).ready(function() {
       $("#queue_dialog").modal();
     }
 
-    var populateQueueDialog = function(obj) {
-      // env looks like this
-      /*
-      {
-         "computeEnvironmentArn":"arn:aws:batch:us-west-2:064561331775:compute-environment/r48-1Thd--0",
-         "computeEnvironmentName":"r48-1Thd--0",
-         "computeResources":{
-            "desiredvCpus":160,
-            "imageId":"ami-fd6dae85",
-            "instanceRole":"arn:aws:iam::064561331775:instance-profile/fh-pi-universal-batchrole",
-            "instanceTypes":[
-               "r4.8xlarge"
-            ],
-            "maxvCpus":2000,
-            "minvCpus":0,
-            "securityGroupIds":[
-               "sg-6c8e7911"
-            ],
-            "subnets":[
-               "subnet-d2ba0cb4"
-            ],
-            "tags":{
-               "Name":"r48-1Thd--0",
-               "billing_contact":"sminot@fredhutch.org",
-               "data_classification":"?",
-               "description":"Compute environment providing up to 2,000 vCPUs (ON DEMAND) with r4.8xlarge instances and 1Tb mounted at the root partition",
-               "grant_critical":"No",
-               "maintenance_window":"?",
-               "owner":"VIDD",
-               "project":"none",
-               "project_code":"none",
-               "public":"Yes",
-               "technical_contact":"sminot@fredhutch.org"
-            },
-            "type":"EC2"
-         },
-         "ecsClusterArn":"arn:aws:ecs:us-west-2:064561331775:cluster/r48-1Thd--0_Batch_4423f63d-9f3e-3d76-a7f1-f9b7cfbedd61",
-         "serviceRole":"arn:aws:iam::064561331775:role/fh-pi-universal-batchservice",
-         "state":"ENABLED",
-         "status":"VALID",
-         "statusReason":"ComputeEnvironment Healthy",
-         "type":"MANAGED"
+    var populateEnvDialog = function(obj) {
+      $("#dialog_env_name").html(obj['computeEnvironmentName']);
+      $("#dialog_env_arn").html(obj['computeEnvironmentArn']);
+      $("#dialog_env_type").html(obj['type']);
+      $("#dialog_env_status").html(obj['status']);
+      $("#dialog_env_state").html(obj['state']);
+      $("#dialog_env_service_role").html(obj['serviceRole']);
+      $("#dialog_env_minvcpus").html(obj['computeResources']['minvCpus']);
+      $("#dialog_env_desiredvcpus").html(obj['computeResources']['desiredvCpus']);
+      $("#dialog_env_maxvcpus").html(obj['computeResources']['maxvCpus']);
+      $("#dialog_env_instance_types").html(obj['computeResources']['instanceTypes'].join(", "));
+      $("#dialog_env_instancerole").html(obj['computeResources']['instanceRole']);
+      if (obj['computeResources'].hasOwnProperty('spotIamFleetRole')) {
+          $("#dialog_env_spotfleetrole").html(obj['computeResources']['spotIamFleetRole']);
       }
-      */
+      if (obj['computeResources'].hasOwnProperty('ec2KeyPair')) {
+          $("#dialog_env_keypair").html(obj['computeResources']['ec2KeyPair']);
+      }
+      if (obj['computeResources'].hasOwnProperty('imageId')) {
+          $("#dialog_env_amiid").html(obj['computeResources']['imageId']);
+      }
+      // leaving VPC alone for now. TODO fix
+      $("#dialog_env_subnets").html(obj['computeResources']['subnets'].join(", "));
+      $("#dialog_env_securitygroups").html(obj['computeResources']['securityGroupIds'].join(", "));
+
+      // Tags
+      var tags = obj['computeResources']['tags'];
+      for (var key in tags) {
+        var value = tags[key];
+        var html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>\n";
+        $("#dialog_env_tag_table").append(html);
+      }
+      $("#env_dialog").modal();
+
     }
 
     // Use a "/test" namespace.
