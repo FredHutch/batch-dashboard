@@ -62,7 +62,7 @@ $(document).ready(function() {
     // click event handler for tables
 
     // click event handler for queue table
-    $('#queue_summary_table tbody').on( 'click', 'td', function (event) {
+    $('#queue_summary_table').on( 'click', '.queue', function (event) {
       $("#dialog_queue_env_table").find("tr:gt(0)").remove();
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_queue", { queue_name: id} )
@@ -81,8 +81,7 @@ $(document).ready(function() {
 
 
     // click event handler for compute environment table
-    // $('#queue_summary_table tbody').on( 'click', 'td', function (event) {
-    $(".compute_environment").click(function(event){
+    $('#comp_env_table').on( 'click', '.compute_environment', function (event) {
       console.log("in click handler for compute environment");
       $("#dialog_env_tag_table").find("tr:gt(0)").remove();
       var id = $(event.target).attr('id');
@@ -101,7 +100,7 @@ $(document).ready(function() {
 
 
     // click event handler for job table
-    $(".job_id").click(function(event){
+    $('#job_table').on( 'click', '.job_id', function (event) {
       console.log("in click handler for job table");
       $("#dialog_env_tag_table").find("tr:gt(0)").remove();
       var id = $(event.target).attr('id');
