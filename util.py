@@ -116,3 +116,7 @@ def describe_env(env_name):
     "get info for one compute environment"
     return BATCH.describe_compute_environments(computeEnvironments=[env_name])\
        ['computeEnvironments'][0]
+
+def describe_job(job_id):
+    "get info for one job"
+    return BATCH.describe_jobs(jobs=[job_id])['jobs'][0]

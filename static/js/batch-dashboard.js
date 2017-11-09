@@ -99,6 +99,25 @@ $(document).ready(function() {
     }); // end of click event handler for compute environment table
 
 
+
+    // click event handler for job table
+    $(".job_id").click(function(event){
+      console.log("in click handler for job table");
+      $("#dialog_env_tag_table").find("tr:gt(0)").remove();
+      var id = $(event.target).attr('id');
+      $.getJSON( "/describe_job", { job_id: id} )
+        .done(function( obj ) {
+          // console.log( "JSON Data: " +obj );
+          // console.log(JSON.stringify(obj));
+          populateJobDialog(obj);
+        })
+        .fail(function( jqxhr, textStatus, error ) {
+          var err = textStatus + ", " + error;
+          console.log( "Request Failed: " + err );
+        });
+    }); // end of click event handler for job table
+
+
     var populateQueueDialog = function(obj) {
       $("#dialog_queue_header").html("Queue " + obj['jobQueueName']);
       $("#dialog_queue_name").html(obj['jobQueueName']);
@@ -109,6 +128,8 @@ $(document).ready(function() {
         var segs = row['computeEnvironment'].split('/');
         var ceName = segs[segs.length -1];
         var html = "<tr><td>" + row['order'] + " </td><td>" + ceName + "</td></tr>\n";
+        // FIXME what about making this a DataTable and appending data to it instead
+        // of appending html?
         $("#dialog_queue_env_table").append(html);
       }
       $("#queue_dialog").modal();
@@ -144,9 +165,107 @@ $(document).ready(function() {
       for (var key in tags) {
         var value = tags[key];
         var html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>\n";
+        // FIXME what about making this a DataTable and appending data to it instead
+        // of appending html?
         $("#dialog_env_tag_table").append(html);
       }
       $("#env_dialog").modal();
+
+    }
+
+    var populateJobDialog = function(obj) {
+      // job status
+      $("#dialog_job_status").html(obj['status']);
+      $("#dialog_job_createdat").html(new Date(obj['createdAt']));
+      if (obj.hasOwnProperty('startedAt')) {
+        $("#dialog_job_startedat").html(new Date(obj['startedAt']));
+      }
+      $("#dialog_job_queue").html(obj['jobQueue'].split("/").pop());
+
+      // job attributes
+      $("#dialog_job_id").html(obj['jobId']);
+      $("#dialog_job_name").html(obj['jobName']);
+      $("#dialog_job_jobdef").html(obj['jobDefinition'].split("/").pop());
+      if (obj.hasOwnProperty('dependsOn')) {
+        var html = "";
+        var jobs = [];
+        obj['dependsOn'].map(function(item){
+          jobs.push(item['jobId']);
+        });
+        html = jobs.join(", ");
+        $("dialog_job_dependson").html(html);
+      }
+
+      // attempts
+      obj['attempts'].map(function(item, index) {
+        var html = "<tr>\n";
+        html += "<td>" + (index + 1) + "of " + obj['attempts'].length + "</td>\n";
+        html += "<td><a target='_blank' href='/job_log?jsn='" + item['logStreamName'] + "'>View logs</a></td>\n";
+        html += "<td>" + new Date(item['startedAt']) + "</td>\n";
+        html += "<td>" + new Date(item['stoppedAt']) + "</td>\n";
+        html += "</tr>";
+        $("#dialog_job_attempts").append(html);
+      });
+
+      // resource requirements
+      $("#dialog_job_role").html(obj['jobRoleArn']);
+      $("#dialog_job_containerimage").html(obj['image']);
+
+      // environment
+      $("#dialog_job_command").html(obj['container']['command'].join(", "));
+      $("#dialog_job_vcpus").html(obj['container']['vcpus']);
+      $("#dialog_job_memory").html(obj['container']['memory'] + " MiB");
+
+
+      // environment variables
+      obj['container']['environment'].map(function item(){
+        var html = "<tr>\n";
+        html += "<td align='right'><b>" + item['name'] +  "</b></td>\n";
+        html += "<td align='left'>" + item['value'] +  "</td>\n";
+        html += "</tr>\n"
+        $("#dialog_job_envvars").append(html);
+      });
+
+      // parameters
+      for (var key in obj['parameters']) {
+        var value = obj['parameters'][key];
+        var html = "<tr>\n";
+        html += "<td align='right'><b>" + key +  "</b></td>\n";
+        html += "<td align='left'>" + value +  "</td>\n";
+        html += "</tr>\n"
+        $("#dialog_job_envvars").append(html);
+      }
+
+      //ulimits
+      obj['container']['ulimits'].map(function(item){
+        var html = "<tr>\n";
+        html += "<td>" + item['name'] + "</td>\n";
+        html += "<td>" + item['softLimit'] + "</td>\n";
+        html += "<td>" + item['hardLimit'] + "</td>\n";
+        html += "</tr>\n";
+        $("#dialog_job_ulimits").append(html);
+      });
+
+      //volumes
+      obj['container']['volumes'].map(function(item){
+        var html="<tr>\n";
+        html += "<td>" + item['name'] + "</td>\n";
+        html += "<td>" + item['host']['sourcePath'] + "</td>\n";
+        html += "</tr>\n";
+        $("#dialog_job_volumes").append(html);
+      });
+
+      //mount points
+      obj['container']['mountPoints'].map(function(item){
+        var html="<tr>\n";
+        html += "<td>" + item['containerPath'] + "</td>\n";
+        html += "<td>" + item['sourceVolume'] + "</td>\n";
+        html += "<td>" + item['readOnly'] + "</td>\n";
+        $("#dialog_job_mountpoints").append(html);
+      });
+
+      $("#job_dialog").modal();
+
 
     }
 

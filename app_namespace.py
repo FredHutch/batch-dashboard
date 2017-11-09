@@ -111,6 +111,13 @@ def describe_env():
     ret = util.describe_env(envname)
     return jsonify(ret)
 
+@app.route("/describe_job", methods=["GET"])
+def describe_job():
+    job_id = request.args.get('job_id')
+    ret = util.describe_job(job_id)
+    return jsonify(ret)
+
+
 
 class MyNamespace(Namespace):
     def on_my_event(self, message):
