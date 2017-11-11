@@ -48,6 +48,10 @@ $(document).ready(function() {
       jobTable.cell("#row_" + jobId, 3).data(status).draw();
     }
 
+    var clearTables = function() {
+        $(".modal table").find("tr:gt(0)").remove();
+    }
+
     // var queueTable = $('#queue_summary_table').DataTable();
     var queueTable = $('#queue_summary_table').DataTable( {
       select: {
@@ -63,7 +67,7 @@ $(document).ready(function() {
 
     // click event handler for queue table
     $('#queue_summary_table').on( 'click', '.queue', function (event) {
-      $("#dialog_queue_env_table").find("tr:gt(0)").remove();
+      clearTables();
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_queue", { queue_name: id} )
         .done(function( obj ) {
@@ -83,7 +87,7 @@ $(document).ready(function() {
     // click event handler for compute environment table
     $('#comp_env_table').on( 'click', '.compute_environment', function (event) {
       console.log("in click handler for compute environment");
-      $("#dialog_env_tag_table").find("tr:gt(0)").remove();
+      clearTables();
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_env", { env_name: id} )
         .done(function( obj ) {
@@ -102,7 +106,7 @@ $(document).ready(function() {
     // click event handler for job table
     $('#job_table').on( 'click', '.job_id', function (event) {
       console.log("in click handler for job table");
-      $("#dialog_env_tag_table").find("tr:gt(0)").remove();
+      clearTables();
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_job", { job_id: id} )
         .done(function( obj ) {
