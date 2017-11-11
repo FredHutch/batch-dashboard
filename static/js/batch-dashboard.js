@@ -342,7 +342,7 @@ $(document).ready(function() {
           console.log("new job, welcome!");
           jobTable.row.add([
             queue,
-            '<a id="' + jobId + '" js="true" class="job_id" href="#">' + jobId + '</a>',
+            '<a id="' + jobId + '" js="true" class="job_id">' + jobId + '</a>',
             jobName,
             newState
           ]).draw();

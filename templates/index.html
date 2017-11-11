@@ -30,7 +30,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
         <h4 class="modal-title" id="dialog_queue_header">Queue queueName</h4>
       </div>
       <div class="modal-body">
@@ -408,9 +408,9 @@
         {% for item in row %}
           <td>
             {% if loop.index == 1 %}
-              <a id="{{item}}" class="queue" href="#">
+              <a id="{{item}}" class="queue">
             {% elif  loop.index > 2 %}
-              <a class="queue_jobs_by_status" id="{{row[0]}}_{{states[loop.index-3]}}" href="#">
+              <a class="queue_jobs_by_status" id="{{row[0]}}_{{states[loop.index-3]}}">
             {% endif %}
             {{ item }}
             {% if loop.index == 1 %}
@@ -444,7 +444,7 @@
         {% for item in row %}
           <td>
             {% if loop.index == 1 %}
-              <a id="{{item}}" class="compute_environment" href="#">
+              <a id="{{item}}" class="compute_environment">
             {% endif %}
             {{ item }}
             {% if loop.index == 1 %}
@@ -476,7 +476,7 @@
         {% for item in row %}
           <td>
             {% if loop.index == 2 %}
-              <a id="{{item}}" class="job_id" href="#">
+              <a id="{{item}}" class="job_id">
             {% endif %}
             {{ item }}
             {% if loop.index == 2 %}
@@ -508,7 +508,7 @@
         {% for item in row %}
           <td>
             {% if loop.index == 2 %}
-              <a class="jobdef" id="{{row[0]}}:{{item}}" href="#">{{item}}</a>
+              <a class="jobdef" id="{{row[0]}}:{{item}}">{{item}}</a>
             {% else %}
               {{item}}
             {% endif %}
