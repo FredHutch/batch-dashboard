@@ -220,7 +220,7 @@ $(document).ready(function() {
       obj['container']['environment'].map(function item(){
         var html = "<tr>\n";
         html += "<td align='right'><b>" + item['name'] +  "</b></td>\n";
-        html += "<td align='left'>" + item['value'] +  "</td>\n";
+        html += "<td align='left' class='breakMe'>" + item['value'] +  "</td>\n";
         html += "</tr>\n"
         $("#dialog_job_envvars").append(html);
       });
@@ -230,7 +230,7 @@ $(document).ready(function() {
         var value = obj['parameters'][key];
         var html = "<tr>\n";
         html += "<td align='right'><b>" + key +  "</b></td>\n";
-        html += "<td align='left'>" + value +  "</td>\n";
+        html += "<td align='left' class='breakMe'>" + value +  "</td>\n";
         html += "</tr>\n"
         $("#dialog_job_envvars").append(html);
       }
