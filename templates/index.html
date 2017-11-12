@@ -365,6 +365,154 @@
 </div>
 
 
+{# job definition modal #}
+<div class="modal fade" id="jobdef_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Job Definition <span id="dialog_jobdef_header"></span></h4>
+      </div>
+      <div class="modal-body">
+        <h3>Job definition attributes</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Job defninition name : revision: </b></td>
+            <td align="left" id="dialog_jobdef_namerevision"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Job definition ARN: </b></td>
+            <td align="left" id="dialog_jobdef_arn"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Status: </b></td>
+            <td align="left" id="dialog_jobdef_status"></td>
+          </tr>
+        </table>
+
+        <h3>Resource Requirements</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Job role ARN: </b></td>
+            <td align="left" id="dialog_jobdef_jobrolearn"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Image: </b></td>
+            <td align="left" id="dialog_jobdef_image"></td>
+          </tr>
+        </table>
+
+<h3>Environment</h3>
+
+<table border="0" class="paddingBetweenCols">
+  <tr>
+    <td align="right"><b>Command: </b></td>
+    <td class="breakMe" align="left" id="dialog_jobdef_command"></td>
+  </tr>
+  <tr>
+    <td align="right"><b>vCPUs: </b></td>
+    <td align="left" id="dialog_jobdef_vcpus"></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Memory (MB): </b></td>
+    <td align="left" id="dialog_jobdef_memory"></td>
+  </tr>
+</table>
+
+<h3>Retry Strategy</h3>
+
+<table border="0" class="paddingBetweenCols">
+  <tr>
+    <td align="right"><b>Attempts: </b></td>
+    <td align="left" id="dialog_jobdef_attempts"></td>
+  </tr>
+</table>
+
+
+<h3>Parameters</h3>
+
+<table border="0" class="paddingBetweenCols" id="dialog_jobdef_parameters">
+{#
+  <tr>
+    <td align="right"><b></b></td> ## key
+    <td align="left"></td> ## value
+  </tr>
+#}
+</table>
+
+
+<h3>Environment variables</h3>
+
+<table border="0" class="paddingBetweenCols" id="dialog_jobdef_envvars">
+{#
+  <tr>
+    <td align="right"><b></b></td> ## key
+    <td align="left"></td> ## value
+  </tr>
+#}
+</table>
+
+
+
+<h3>uLimits</h3>
+
+<table id="dialog_jobdef_ulimits" class="paddingBetweenCols">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Soft limit</th>
+      <th>Hard limit</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+
+<h3>Volumes</h3>
+
+<table id="dialog_jobdef_volumes" class="paddingBetweenCols">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Source path</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+<h3>Mount points</h3>
+
+<p><b id="dialog_jobdef_filesystemstatus">{# Read only filesystem #}</b></p>
+
+<table id="dialog_jobdef_mountpoints" class="paddingBetweenCols">
+  <thead>
+    <tr>
+      <th>Container path</th>
+      <th>Source volume</th>
+      <th>Read only</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 {# end modals #}
 
 
@@ -507,8 +655,8 @@
       <tr>
         {% for item in row %}
           <td>
-            {% if loop.index == 2 %}
-              <a class="jobdef" id="{{row[0]}}:{{item}}">{{item}}</a>
+            {% if loop.index == 1 %}
+              <a class="jobdef" id="{{row[0]}}:{{row[1]}}">{{row[0]}}</a>
             {% else %}
               {{item}}
             {% endif %}

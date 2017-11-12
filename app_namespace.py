@@ -118,6 +118,12 @@ def describe_job():
     return jsonify(ret)
 
 
+@app.route("/describe_job_definition", methods=["GET"])
+def describe_job_definition():
+    jobdef_id = request.args.get("jobdef_id")
+    ret = util.describe_job_definition(jobdef_id)
+    return jsonify(ret)
+
 
 class MyNamespace(Namespace):
     def on_my_event(self, message):

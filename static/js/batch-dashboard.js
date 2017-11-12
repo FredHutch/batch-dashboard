@@ -121,6 +121,23 @@ $(document).ready(function() {
     }); // end of click event handler for job table
 
 
+    // click event handler for job definition table
+    $('#job_def_table').on( 'click', '.jobdef', function (event) {
+      console.log("in click handler for job definition table");
+      clearTables();
+      var id = $(event.target).attr('id');
+      $.getJSON( "/describe_job_definition", { jobdef_id: id} )
+        .done(function( obj ) {
+          populateJobDefDialog(obj);
+        })
+        .fail(function( jqxhr, textStatus, error ) {
+          var err = textStatus + ", " + error;
+          console.log( "Request Failed: " + err );
+        });
+    }); // end of click event handler for job definition table
+
+
+
     var populateQueueDialog = function(obj) {
       $("#dialog_queue_header").html("Queue " + obj['jobQueueName']);
       $("#dialog_queue_name").html(obj['jobQueueName']);
@@ -236,7 +253,7 @@ $(document).ready(function() {
         html += "<td align='right'><b>" + key +  "</b></td>\n";
         html += "<td align='left' class='breakMe'>" + value +  "</td>\n";
         html += "</tr>\n"
-        $("#dialog_job_envvars").append(html);
+        $("#dialog_job_parameters").append(html);
       }
 
       //ulimits
@@ -271,6 +288,90 @@ $(document).ready(function() {
 
 
     }
+
+
+var populateJobDefDialog = function(obj) {
+  // job status
+  var nameRevision = obj["jobDefinitionName"] + ":" + obj['revision'];
+  $("#dialog_jobdef_header").html(nameRevision);
+  $("#dialog_jobdef_namerevision").html(nameRevision);
+  $("#dialog_jobdef_arn").html(obj["jobDefinitionArn"]);
+  $("#dialog_jobdef_arn").html(obj['"jobDefinitionArn"']);
+  $("#dialog_jobdef_status").html(obj["status"]);
+  var containerProperties = obj['containerProperties'];
+  console.log("containerProperties is " + containerProperties);
+  if (containerProperties.hasOwnProperty("jobRoleArn")) {
+    $("#dialog_jobdef_jobrolearn").html(containerProperties["jobRoleArn"]);
+  }
+  $("#dialog_jobdef_image").html(containerProperties["image"]);
+  $("#dialog_jobdef_command").html(containerProperties['command'].join(", "));
+  $("#dialog_jobdef_vcpus").html(containerProperties['vcpus']);
+  $("#dialog_jobdef_memory").html(containerProperties['memory']);
+
+
+
+  // attempts
+  if (!obj.hasOwnProperty('retryStrategy')) {
+      obj['retryStrategy'] = {attempts: 1};
+  }
+  $("#dialog_jobdef_attempts").html(obj['retryStrategy']['attempts']);
+
+
+  // parameters
+  for (var key in obj['parameters']) {
+    var value = obj['parameters'][key];
+    var html = "<tr>\n";
+    html += "<td align='right'><b>" + key +  "</b></td>\n";
+    html += "<td align='left' class='breakMe'>" + value +  "</td>\n";
+    html += "</tr>\n"
+    $("#dialog_jobdef_parameters").append(html);
+}
+
+// environment variables
+containerProperties['environment'].map(function item(){
+  var html = "<tr>\n";
+  html += "<td align='right'><b>" + item['name'] +  "</b></td>\n";
+  html += "<td align='left' class='breakMe'>" + item['value'] +  "</td>\n";
+  html += "</tr>\n"
+  $("#dialog_jobdef_envvars").append(html);
+});
+
+
+//ulimits
+containerProperties['ulimits'].map(function(item){
+  var html = "<tr>\n";
+  html += "<td>" + item['name'] + "</td>\n";
+  html += "<td>" + item['softLimit'] + "</td>\n";
+  html += "<td>" + item['hardLimit'] + "</td>\n";
+  html += "</tr>\n";
+  $("#dialog_jobdef_ulimits").append(html);
+});
+
+
+//volumes
+containerProperties['volumes'].map(function(item){
+  var html="<tr>\n";
+  html += "<td>" + item['name'] + "</td>\n";
+  html += "<td>" + item['host']['sourcePath'] + "</td>\n";
+  html += "</tr>\n";
+  $("#dialog_jobdef_volumes").append(html);
+});
+
+//mount points
+containerProperties['mountPoints'].map(function(item){
+  var html="<tr>\n";
+  html += "<td>" + item['containerPath'] + "</td>\n";
+  html += "<td>" + item['sourceVolume'] + "</td>\n";
+  html += "<td>" + item['readOnly'] + "</td>\n";
+  $("#dialog_jobdef_mountpoints").append(html);
+});
+
+  $("#jobdef_dialog").modal();
+
+
+}
+
+
 
     // Use a "/test" namespace.
     // An application can open a connection on multiple namespaces, and

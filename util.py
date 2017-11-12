@@ -120,3 +120,10 @@ def describe_env(env_name):
 def describe_job(job_id):
     "get info for one job"
     return BATCH.describe_jobs(jobs=[job_id])['jobs'][0]
+
+def describe_job_definition(jobdef_id):
+    "get info for one revision of a job definition"
+    jobdef, revision = jobdef_id.split(":")
+    revision = int(revision)
+    defs = BATCH.describe_job_definitions(jobDefinitionName=jobdef)['jobDefinitions']
+    return [x for x in defs if x['revision'] == revision][0]
