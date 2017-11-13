@@ -272,7 +272,7 @@ $(document).ready(function() {
 
 
       // environment variables
-      obj['container']['environment'].map(function item(){
+      obj['container']['environment'].map(function(item){
         var html = "<tr>\n";
         html += "<td align='right'><b>" + item['name'] +  "</b></td>\n";
         html += "<td align='left' class='breakMe'>" + item['value'] +  "</td>\n";
