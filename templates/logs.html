@@ -1,0 +1,56 @@
+{% extends "layout.html" %}a
+{% block content %}
+
+<p>
+<a href="/job_log?lsn={{log_stream_name}}&nextToken={{prev_token}}" class="button">
+    <button>&lt; Previous</button>
+</a>
+
+&nbsp;
+
+<a href="/job_log?lsn={{log_stream_name}}&nextToken={{next_token}}" class="button">
+     <button>Next &gt;</button>
+</a>
+
+</p>
+
+<p>&nbsp;</p>
+
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Time (UTC +00:00)</th>
+                <th>Message</th>
+            </tr>
+        <tbody>
+            {% for row in log_table_data %}
+                <tr>
+                    {% for item in row %}
+                        <td
+                        {% if loop.index == 1 %}
+                         class="breakMe"
+                        {% endif %}
+                        >{{item}}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<p>&nbsp;</p>
+
+<p>
+<a href="/job_log?lsn={{log_stream_name}}&nextToken={{prev_token}}" class="button">
+    <button>&lt; Previous</button>
+</a>
+
+&nbsp;
+
+<a href="/job_log?lsn={{log_stream_name}}&nextToken={{next_token}}" class="button">
+     <button>Next &gt;</button>
+</a>
+
+</p>
+
+{% endblock %}

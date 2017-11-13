@@ -124,6 +124,19 @@ def describe_job_definition():
     ret = util.describe_job_definition(jobdef_id)
     return jsonify(ret)
 
+@app.route("/job_log", methods=["GET"])
+def job_log():
+    log_stream_name = request.args.get("lsn")
+    next_token = None
+    if 'nextToken' in request.args:
+        next_token = request.args.get("nextToken")
+    log_table_data, next_token, prev_token = util.get_log_events(log_stream_name, next_token)
+    return render_template('logs.html',
+                           log_table_data=log_table_data,
+                           next_token=next_token,
+                           prev_token=prev_token,
+                           log_stream_name=log_stream_name)
+
 
 class MyNamespace(Namespace):
     def on_my_event(self, message):

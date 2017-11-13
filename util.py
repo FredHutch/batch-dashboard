@@ -1,4 +1,7 @@
 "utilities"
+
+import datetime
+
 import boto3
 
 
@@ -127,3 +130,26 @@ def describe_job_definition(jobdef_id):
     revision = int(revision)
     defs = BATCH.describe_job_definitions(jobDefinitionName=jobdef)['jobDefinitions']
     return [x for x in defs if x['revision'] == revision][0]
+
+def get_log_events(log_stream_name, next_token):
+    "get log events & timestamps for one job"
+    client = boto3.client("logs")
+    output = []
+    args = dict(logGroupName="/aws/batch/job", logStreamName=log_stream_name,
+                startFromHead=True, limit=25)
+    if next_token:
+        args['nextToken'] = next_token
+
+    result = client.get_log_events(**args)
+    if not result['events']:
+        return [], result['nextForwardToken'], result['nextBackwardToken']
+    for event in result['events']:
+        row = []
+
+        # print(event['message'])
+        timestamp = datetime.datetime.fromtimestamp(event['timestamp'] / 1e3)
+        row.append(timestamp.isoformat())
+        row.append(event['message'])
+        output.append(row)
+
+    return output, result['nextForwardToken'], result['nextBackwardToken']
