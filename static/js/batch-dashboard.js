@@ -50,7 +50,6 @@ $(document).ready(function() {
 
     var clearTables = function() {
         $(".dynamicDialogTable").find("tr:gt(0)").remove();
-        $(".dynamicDialogTable").find("tr:gt(0)").remove();
     }
 
 
