@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Dashboard{% endblock %}
 {% block pagejs %}<script type="text/javascript" charset="utf8" src="/js/batch-dashboard.js?timestamp={{timestamp}}"></script>{% endblock %}
 {% block content %}
 {# modals #}
@@ -32,7 +32,7 @@
 
         <h3>Compute Environments</h3>
 
-        <table id="dialog_queue_env_table" class="paddingBetweenCols">
+        <table id="dialog_queue_env_table" class="paddingBetweenCols dynamicDialogTable">
           <tr>
             <th>Order</th>
             <th>Compute environment</th>
@@ -143,7 +143,7 @@
 
         <h3>EC2 Tags</h3>
 
-        <table id="dialog_env_tag_table" class="paddingBetweenCols">
+        <table id="dialog_env_tag_table" class="paddingBetweenCols dynamicDialogTable">
           <tr>
             <th>Name</th>
             <th>Value</th>
@@ -215,7 +215,7 @@
 
 <h2>Attempts</h2>
 
-<table id="dialog_job_attempts" class="paddingBetweenCols">
+<table id="dialog_job_attempts" class="paddingBetweenCols dynamicDialogTable">
   <thead>
     <tr>
       <th>Attempts</th>
@@ -264,7 +264,7 @@
 
 <h2>Environment variables</h2>
 
-<table border="0" class="paddingBetweenCols" id="dialog_job_envvars">
+<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_job_envvars">
 {#
   <tr>
     <td align="right"><b></b></td> ## key
@@ -276,7 +276,7 @@
 
 <h2>Parameters</h2>
 
-<table border="0" class="paddingBetweenCols" id="dialog_job_parameters">
+<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_job_parameters">
 {#
   <tr>
     <td align="right"><b></b></td> ## key
@@ -287,7 +287,7 @@
 
 <h2>uLimits</h2>
 
-<table id="dialog_job_ulimits" class="paddingBetweenCols">
+<table id="dialog_job_ulimits" class="paddingBetweenCols dynamicDialogTable">
   <thead>
     <tr>
       <th>Name</th>
@@ -303,7 +303,7 @@
 
 <h2>Volumes</h2>
 
-<table id="dialog_job_volumes" class="paddingBetweenCols">
+<table id="dialog_job_volumes" class="paddingBetweenCols dynamicDialogTable">
   <thead>
     <tr>
       <th>Name</th>
@@ -319,7 +319,7 @@
 
 <p><b id="dialog_job_filesystemstatus">{# Read only filesystem #}</b></p>
 
-<table id="dialog_job_mountpoints" class="paddingBetweenCols">
+<table id="dialog_job_mountpoints" class="paddingBetweenCols dynamicDialogTable">
   <thead>
     <tr>
       <th>Container path</th>
@@ -412,7 +412,7 @@
 
 <h3>Parameters</h3>
 
-<table border="0" class="paddingBetweenCols" id="dialog_jobdef_parameters">
+<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_parameters">
 {#
   <tr>
     <td align="right"><b></b></td> ## key
@@ -424,7 +424,7 @@
 
 <h3>Environment variables</h3>
 
-<table border="0" class="paddingBetweenCols" id="dialog_jobdef_envvars">
+<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_envvars">
 {#
   <tr>
     <td align="right"><b></b></td> ## key
@@ -437,7 +437,7 @@
 
 <h3>uLimits</h3>
 
-<table id="dialog_jobdef_ulimits" class="paddingBetweenCols">
+<table id="dialog_jobdef_ulimits" class="paddingBetweenCols dynamicDialogTable">
   <thead>
     <tr>
       <th>Name</th>
@@ -453,7 +453,7 @@
 
 <h3>Volumes</h3>
 
-<table id="dialog_jobdef_volumes" class="paddingBetweenCols">
+<table id="dialog_jobdef_volumes" class="paddingBetweenCols dynamicDialogTable">
   <thead>
     <tr>
       <th>Name</th>
@@ -469,7 +469,7 @@
 
 <p><b id="dialog_jobdef_filesystemstatus">{# Read only filesystem #}</b></p>
 
-<table id="dialog_jobdef_mountpoints" class="paddingBetweenCols">
+<table id="dialog_jobdef_mountpoints" class="paddingBetweenCols dynamicDialogTable">
   <thead>
     <tr>
       <th>Container path</th>

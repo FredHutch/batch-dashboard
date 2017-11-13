@@ -49,7 +49,7 @@ $(document).ready(function() {
     }
 
     var clearTables = function() {
-        $(".modal table").find("tr:gt(0)").remove();
+        $(".dynamicDialogTable table").find("tr:gt(0)").remove();
     }
 
 
