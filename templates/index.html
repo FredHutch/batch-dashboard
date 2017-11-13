@@ -536,13 +536,9 @@
           <td>
             {% if loop.index == 1 %}
               <a id="{{item}}" class="queue">
-            {% elif  loop.index > 2 %}
-              <a class="queue_jobs_by_status" id="{{row[0]}}_{{states[loop.index-3]}}">
             {% endif %}
             {{ item }}
             {% if loop.index == 1 %}
-              </a>
-            {% elif loop.index > 2 %}
               </a>
             {% endif %}
           </td>
@@ -588,6 +584,26 @@
 
 <h2 id="jobs_header">Jobs</h2>
 
+{#
+<p>
+    Filter by queue: <select id="queue_filter">
+        <option></option>
+        {% for qname in queue_names %}
+            <option>{{qname}}</option>
+        {% endfor %}
+    </select>
+
+    Filter by job state: <select id="state_filter">
+        <option></option>
+        {% for state in states %}
+            <option>{{state}}</option>
+        {% endfor %}
+    </select>
+
+    <button id="clear_filters">Clear Filters</button>
+</p>
+#}
+
 <table id="job_table" class="display">
   <thead>
     <tr>
@@ -614,6 +630,28 @@
       </tr>
     {% endfor %}
   </tbody>
+  <tfoot>
+      <tr>
+          <th>
+              <select id="queue_filter">
+                  <option>No Filter</option>
+                  {% for qname in queue_names %}
+                      <option>{{qname}}</option>
+                  {% endfor %}
+              </select>
+          </th>
+          <th></th>
+          <th></th>
+          <th>
+              <select id="state_filter">
+                  <option>No Filter</option>
+                  {% for state in states %}
+                      <option>{{state}}</option>
+                  {% endfor %}
+              </select>
+          </th>
+      </tr>
+  </tfoot>
 </table>
 
 <h2 id="job_def_header">Job Definitions</h2>

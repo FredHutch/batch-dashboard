@@ -52,16 +52,49 @@ $(document).ready(function() {
         $(".modal table").find("tr:gt(0)").remove();
     }
 
-    // var queueTable = $('#queue_summary_table').DataTable();
-    var queueTable = $('#queue_summary_table').DataTable( {
-      select: {
-          style: 'os',
-          items: 'cells'
-      }
-    } );
+
+    // tables
+    var queueTable = $('#queue_summary_table').DataTable();
     var envTable = $('#comp_env_table').DataTable();
     var jobTable = $('#job_table').DataTable();
     var jobDefTable = $("#job_def_table").DataTable();
+
+
+/*
+    // filters
+    $("#queue_filter").change(function(){
+        var queue = $("#queue_filter option:selected").text();
+        console.log("you chose the queue "  + queue);
+        jobTable.draw();
+    });
+
+    // filters
+    $("#state_filter").change(function(){
+        var state = $("#state_filter option:selected").text();
+        console.log("you chose the state "  + state);
+        jobTable.draw();
+    });
+*/
+
+// Apply the search
+ jobTable.columns().every( function () {
+     var that = this;
+
+     $( 'select', this.footer() ).on( 'change', function () {
+         console.log("your filter is " + this.value);
+         var searchString = this.value;
+         if (this.value == "No Filter") {
+             searchString = "";
+             console.log("searchString changed to " + searchString);
+         }
+         if ( that.search() !== searchString ) {
+             that
+                 .search( searchString )
+                 .draw();
+         }
+     } );
+ } );
+
 
     // click event handler for tables
 

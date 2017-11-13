@@ -81,6 +81,7 @@ def index():
     "main route"
     info = util.get_all_job_info()
     queue_table_data = util.get_queue_summary(info)
+    queue_names = sorted([x['queue_name'] for x in info], key=lambda s: s.lower())
     envs = util.get_compute_environment_table()
     jobs = util.get_job_table(info)
     jobdefs = util.get_job_definition_table()
@@ -91,7 +92,8 @@ def index():
                            job_table=jobs['data'],
                            job_def_table=jobdefs['data'],
                            timestamp=timestamp,
-                           states=util.STATES)
+                           states=util.STATES,
+                           queue_names=queue_names)
 
 
 @app.route('/describe_queue', methods=['GET'])
