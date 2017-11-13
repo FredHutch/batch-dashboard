@@ -131,18 +131,25 @@ def describe_job_definition(jobdef_id):
     defs = BATCH.describe_job_definitions(jobDefinitionName=jobdef)['jobDefinitions']
     return [x for x in defs if x['revision'] == revision][0]
 
-def get_log_events(log_stream_name, next_token):
+def get_log_events(job_id, attempt, next_token, start_from_head):
     "get log events & timestamps for one job"
+    job = BATCH.describe_jobs(jobs=[job_id])['jobs'][0]
+    retdict = {"jobId": job['jobId'], "jobName": job['jobName'],
+               "attempt": attempt, "rows": [],
+               "jobStatus": job['status']}
+    log_stream_name = job['attempts'][attempt]['container']['logStreamName']
     client = boto3.client("logs")
     output = []
     args = dict(logGroupName="/aws/batch/job", logStreamName=log_stream_name,
-                startFromHead=True, limit=25)
+                limit=25, startFromHead=start_from_head)
     if next_token:
         args['nextToken'] = next_token
 
     result = client.get_log_events(**args)
+    retdict['nextForwardToken'] = result['nextForwardToken']
+    retdict['nextBackwardToken'] = result['nextBackwardToken']
     if not result['events']:
-        return [], result['nextForwardToken'], result['nextBackwardToken']
+        return retdict
     for event in result['events']:
         row = []
 
@@ -152,4 +159,6 @@ def get_log_events(log_stream_name, next_token):
         row.append(event['message'])
         output.append(row)
 
-    return output, result['nextForwardToken'], result['nextBackwardToken']
+    # return output, result['nextForwardToken'], result['nextBackwardToken']
+    retdict['rows'] = output
+    return retdict

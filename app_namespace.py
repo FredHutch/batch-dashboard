@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from threading import Lock
+import distutils
 import json
 import os
 import sys
@@ -128,16 +129,26 @@ def describe_job_definition():
 
 @app.route("/job_log", methods=["GET"])
 def job_log():
-    log_stream_name = request.args.get("lsn")
+    start_from_head = bool(distutils.util.strtobool(request.args.get("startFromHead",
+                                                                     "True")))
+    job_id = request.args.get("jobId")
+    attempt = int(request.args.get("attempt"))
+
     next_token = None
     if 'nextToken' in request.args:
         next_token = request.args.get("nextToken")
-    log_table_data, next_token, prev_token = util.get_log_events(log_stream_name, next_token)
+    # log_table_data, next_token, prev_token = util.get_log_events(log_stream_name, next_token,
+    result = util.get_log_events(job_id, attempt, next_token, start_from_head)
+
     return render_template('logs.html',
-                           log_table_data=log_table_data,
-                           next_token=next_token,
-                           prev_token=prev_token,
-                           log_stream_name=log_stream_name)
+                           log_table_data=result['rows'],
+                           next_token=result['nextForwardToken'],
+                           prev_token=result['nextBackwardToken'],
+                           job_id=result['jobId'],
+                           job_name=result['jobName'],
+                           status=result['jobStatus'],
+                           attempt=attempt,
+                           start_from_head=start_from_head)
 
 
 class MyNamespace(Namespace):

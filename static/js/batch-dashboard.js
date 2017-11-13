@@ -254,7 +254,7 @@ $(document).ready(function() {
         var html = "<tr>\n";
         html += "<td>" + (index + 1) + "of " + obj['attempts'].length + "</td>\n";
         console.log("lsn = " + item['container']['logStreamName']);
-        html += "<td><a target='_blank' href='/job_log?lsn=" + item['container']['logStreamName'] + "'>View logs</a></td>\n";
+        html += "<td><a target='_blank' href='/job_log?jobId=" + obj['jobId'] +  "&attempt=" + index + "'>View logs</a></td>\n";
         html += "<td>" + new Date(item['startedAt']) + "</td>\n";
         html += "<td>" + new Date(item['stoppedAt']) + "</td>\n";
         html += "</tr>";

@@ -1,14 +1,44 @@
 {% extends "layout.html" %}a
 {% block content %}
 
+<h1>Job Logs</h1>
+
+<p><b>Job ID:</b> {{job_id}} </p>
+<p><b>Job Name:</b> {{job_name}}</p>
+<p><b>Attempt:</b> {{attempt}}</p>
+<p><b>Job Status:</b> {{status}}</p>
+
 <p>
-<a href="/job_log?lsn={{log_stream_name}}&nextToken={{prev_token}}" class="button">
+{% if start_from_head %}
+{% set forward, back = next_token, prev_token %}
+Showing oldest events first.
+
+<a href="{{request.path}}?jobId={{request.args['jobId']}}&attempt={{request.args['attempt']}}&startFromHead=False">
+See newest events first.
+</a>
+
+{% else %}
+{% set forward, back = prev_token, next_token %}
+
+Showing newest events first.
+
+<a href="{{request.path}}?jobId={{request.args['jobId']}}&attempt={{request.args['attempt']}}&startFromHead=True">
+See oldest events first.
+</a>
+
+
+{% endif %}
+
+</p>
+
+<p>
+<a href="{{request.path}}?jobId={{request.args['jobId']}}&attempt={{request.args['attempt']}}&startFromHead={{start_from_head}}&nextToken={{back}}">
     <button>&lt; Previous</button>
 </a>
 
 &nbsp;
 
-<a href="/job_log?lsn={{log_stream_name}}&nextToken={{next_token}}" class="button">
+<a href="{{request.path}}?jobId={{request.args['jobId']}}&attempt={{request.args['attempt']}}&startFromHead={{start_from_head}}&nextToken={{forward}}">
      <button>Next &gt;</button>
 </a>
 
@@ -41,16 +71,18 @@
 <p>&nbsp;</p>
 
 <p>
-<a href="/job_log?lsn={{log_stream_name}}&nextToken={{prev_token}}" class="button">
+<a href="{{request.path}}?jobId={{request.args['jobId']}}&attempt={{request.args['attempt']}}&startFromHead={{start_from_head}}&nextToken={{back}}">
     <button>&lt; Previous</button>
 </a>
 
 &nbsp;
 
-<a href="/job_log?lsn={{log_stream_name}}&nextToken={{next_token}}" class="button">
+<a href="{{request.path}}?jobId={{request.args['jobId']}}&attempt={{request.args['attempt']}}&startFromHead={{start_from_head}}&nextToken={{forward}}">
      <button>Next &gt;</button>
 </a>
 
 </p>
+
+
 
 {% endblock %}
