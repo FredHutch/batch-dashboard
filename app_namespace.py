@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from threading import Lock
-import distutils
+from distutils.util import strtobool
 import json
 import os
 import sys
@@ -129,8 +129,7 @@ def describe_job_definition():
 
 @app.route("/job_log", methods=["GET"])
 def job_log():
-    start_from_head = bool(distutils.util.strtobool(request.args.get("startFromHead",
-                                                                     "True")))
+    start_from_head = bool(strtobool(request.args.get("startFromHead", "True")))
     job_id = request.args.get("jobId")
     attempt = int(request.args.get("attempt"))
 
