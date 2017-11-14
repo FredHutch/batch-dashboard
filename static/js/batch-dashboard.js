@@ -262,8 +262,8 @@ $(document).ready(function() {
       });
 
       // resource requirements
-      $("#dialog_job_role").html(obj['jobRoleArn']);
-      $("#dialog_job_containerimage").html(obj['image']);
+      $("#dialog_job_role").html(obj['container']['jobRoleArn']);
+      $("#dialog_job_containerimage").html(obj['container']['image']);
 
       // environment
       $("#dialog_job_command").html(obj['container']['command'].join(", "));
