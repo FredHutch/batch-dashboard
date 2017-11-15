@@ -49,7 +49,7 @@ $(document).ready(function() {
     }
 
     var clearTables = function() {
-        $(".dynamicDialogTable table").find("tr:gt(0)").remove();
+        $(".dynamicDialogTable").find("tr:gt(0)").remove();
     }
 
 
@@ -262,8 +262,8 @@ $(document).ready(function() {
       });
 
       // resource requirements
-      $("#dialog_job_role").html(obj['jobRoleArn']);
-      $("#dialog_job_containerimage").html(obj['image']);
+      $("#dialog_job_role").html(obj['container']['jobRoleArn']);
+      $("#dialog_job_containerimage").html(obj['container']['image']);
 
       // environment
       $("#dialog_job_command").html(obj['container']['command'].join(", "));
@@ -272,7 +272,7 @@ $(document).ready(function() {
 
 
       // environment variables
-      obj['container']['environment'].map(function item(){
+      obj['container']['environment'].map(function(item){
         var html = "<tr>\n";
         html += "<td align='right'><b>" + item['name'] +  "</b></td>\n";
         html += "<td align='left' class='breakMe'>" + item['value'] +  "</td>\n";
