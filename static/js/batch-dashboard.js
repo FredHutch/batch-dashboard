@@ -318,6 +318,15 @@ $(document).ready(function() {
         $("#dialog_job_mountpoints").append(html);
       });
 
+      if (obj['status'] == 'RUNNING') {
+          //         html += "<td><a target='_blank' href='/job_log?jobId=" + obj['jobId'] +  "&attempt=" + index + "'>View logs</a></td>\n";
+          var attempt = obj['attempts'].length;
+          var jobId = obj['jobId'];
+          $("#dialog_job_log_link").html("<a target='_blank' href='/job_log?jobId=" + jobId + "&attempt=" + attempt + "'>View logs for the most recent attempt in the CloudWatch console</a>");
+      } else {
+          $("#dialog_job_log_link").html("Only visible when job is <B>RUNNING</B>.");
+      }
+
       $("#job_dialog").modal();
 
 

@@ -137,7 +137,10 @@ def get_log_events(job_id, attempt, next_token, start_from_head):
     retdict = {"jobId": job['jobId'], "jobName": job['jobName'],
                "attempt": attempt, "rows": [],
                "jobStatus": job['status']}
-    log_stream_name = job['attempts'][attempt]['container']['logStreamName']
+    if job['attempts']:
+        log_stream_name = job['attempts'][attempt]['container']['logStreamName']
+    else:
+        log_stream_name = job['container']['logStreamName']
     client = boto3.client("logs")
     output = []
     args = dict(logGroupName="/aws/batch/job", logStreamName=log_stream_name,
