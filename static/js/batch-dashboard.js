@@ -56,7 +56,16 @@ $(document).ready(function() {
     // tables
     var queueTable = $('#queue_summary_table').DataTable();
     var envTable = $('#comp_env_table').DataTable();
-    var jobTable = $('#job_table').DataTable();
+    var jobTable = $('#job_table').DataTable({
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'copyHtml5',
+                title: null,
+                text: 'Copy to clipboard'
+            }
+        ]
+    });
     var jobDefTable = $("#job_def_table").DataTable();
 
 
