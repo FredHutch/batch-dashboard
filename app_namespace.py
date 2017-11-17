@@ -19,7 +19,7 @@ async_mode = None
 
 app = Flask(__name__, static_url_path='')
 
-required_env_vars = ['QUEUE_URL', 'APP_SECRET']
+required_env_vars = ['QUEUE_URL', 'APP_SECRET', 'MONGO_URL']
 notset = False
 for var in required_env_vars:
     if not os.getenv(var):
