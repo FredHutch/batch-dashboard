@@ -1,10 +1,8 @@
 "utilities"
 
 import datetime
-import os
 
 import boto3
-import pymongo
 
 
 STATES = ['SUBMITTED', 'PENDING', 'RUNNABLE', 'STARTING',
@@ -167,43 +165,3 @@ def get_log_events(job_id, attempt, next_token, start_from_head):
     # return output, result['nextForwardToken'], result['nextBackwardToken']
     retdict['rows'] = output
     return retdict
-
-def get_job_groups(): # FIXME take info parameter
-    "get job group information from mongodb"
-    now = datetime.datetime.now()
-    twoweeksago = now - datetime.timedelta(days=14)
-    client = pymongo.MongoClient(os.getenv("MONGO_URL"))
-    db0 = client.batch_events
-    coll = db0['events']
-
-    # This returns multiple items with the same jobId; not sure why. FIXME
-    # maybe need unique constraints on the db? What would they be?
-    cursor = coll.find({"$and":
-                        [
-                            {"$or": [{"status": "PENDING"},
-                                     {"status": "RUNNABLE"}]},
-                            {"timestamp": {"$gt": twoweeksago}}
-                        ]})
-    idset = set()
-    job_groups = {}
-    for item in cursor:
-        if not item['jobId'] in idset: # filter out dupes
-            if 'container' in item and 'environment' in item['container']:
-                env = item['container']['environment']
-                job_group_vars = [{x['name']: x['value']}  \
-                    for x in env if x['name'].startswith('JOB_GROUP_')]
-                job_group_dict = {}
-                for job_group_var in job_group_vars:
-                    job_group_dict.update(job_group_var)
-                if 'JOB_GROUP_NAME' in job_group_dict:
-                    job_group_name = job_group_dict['JOB_GROUP_NAME']
-                    if not job_group_name in job_groups:
-                        job_groups[job_group_name] = dict(ids=[item['jobId']])
-                        for key, val in job_group_dict.items():
-                            if not key == "JOB_GROUP_NAME":
-                                job_groups[job_group_name][key] = val
-                    else:
-                        job_groups[job_group_name]['ids'].append(item['jobId'])
-        idset.add(item['jobId'])
-    # FIXME filter out any jobs that app (info, from boto3) does not know about
-    # TODO return something...
