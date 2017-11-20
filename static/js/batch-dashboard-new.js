@@ -82,6 +82,7 @@ var ComputeEnvironment = function(data, dt) {
   };
 
 
+var fullListOfEnvironments = [];
 
 
 // Initial data set
@@ -163,22 +164,22 @@ people
 );
 
 
-ko.mapping.fromJS(
-data0,
-{
-  key: function(data) {
-    console.log("data are ");
-    console.log(data);
-    return ko.utils.unwrapObservable(data.name);
-  },
-  create: function(options) {
-    console.log('here are options');
-    console.log(options);
-    return new ComputeEnvironment(options.data, envTable);
-  }
-},
-envs
-);
+// ko.mapping.fromJS(
+// data0,
+// {
+//   key: function(data) {
+//     console.log("data are ");
+//     console.log(data);
+//     return ko.utils.unwrapObservable(data.name);
+//   },
+//   create: function(options) {
+//     console.log('here are options');
+//     console.log(options);
+//     return new ComputeEnvironment(options.data, envTable);
+//   }
+// },
+// envs
+// );
 
 
 
@@ -205,18 +206,74 @@ age: 34
 people()[0].first('dang');
 
 
-envs()[0].name('plappppe');
-console.log(envs()[0].name());
-envs.push(new ComputeEnvironment({ // works!
-name: 'newy',
-type: 'haha',
-minvCpus: 21,
-desiredvCpus: 22,
-maxvCpus: 23
-}, envTable));
+// envs()[0].name('plappppe');
+// console.log(envs()[0].name());
+// envs.push(new ComputeEnvironment({ // works!
+// name: 'newy',
+// type: 'haha',
+// minvCpus: 21,
+// desiredvCpus: 22,
+// maxvCpus: 23
+// }, envTable));
 
 console.log("-----------");
 
-envs.shift();
+// envs.shift();
+
+$.getJSON('/describe_envs').done(function(data){
+    fullListOfEnvironments = data;
+    console.log("full list of compute environments:");
+    console.log(fullListOfEnvironments);
+    // var mapping = {
+    //   'name': {
+    //     create: function(options) {
+    //       return options.data['computeEnvironmentName']; // FIXME should probably call it this throughout, not `name`
+    //     },
+    //   'minvCpus': {
+    //     create: function(options) {
+    //       return options.data['computeResources']['minvCpus'];
+    //     },
+    //   'desiredvCpus': {
+    //     create: function(options) {
+    //       return options.data['computeResources']['desiredvCpus'];
+    //     }
+    //   },
+    //   'maxvCpus': {
+    //     create: function(options) {
+    //       return options.data['computeResources']['maxvCpus'];
+    //     }
+    //   }
+    //   }
+    //   }
+    // }
+    // envs = ko.mapping.fromJS(fullListOfEnvironments, mapping);
+    // console.log("envs:");
+    // console.log(envs);
+    ko.mapping.fromJS(
+    fullListOfEnvironments,
+    {
+      key: function(data) {
+        console.log("data are ");
+        console.log(data);
+        return ko.utils.unwrapObservable(data.computeEnvironmentName); // ??
+      },
+      create: function(options) {
+        console.log('here are options');
+        console.log(options);
+        return new ComputeEnvironment({
+          name: options.data.computeEnvironmentName,
+          type: options.data.type,
+          minvCpus: options.data.computeResources.minvCpus,
+          desiredvCpus: options.data.computeResources.desiredvCpus,
+          maxvCpus: options.data.computeResources.maxvCpus
+        }, envTable);
+      }
+    },
+    envs
+    );
+
+
+});
+
 
 } );
