@@ -116,6 +116,14 @@ var envTable = $("#comp_env_table").DataTable( {
     {data: 'minvCpus()'},
     {data: 'desiredvCpus()'},
     {data: 'maxvCpus()'}
+  ],
+  columnDefs: [
+    {
+      "render": function(data, type, row) {
+        return '<a class="compute_environment" id="' + data + '">' + data + '</a>';
+      },
+      "targets": 0
+    }
   ]
 });
 
