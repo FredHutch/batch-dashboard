@@ -76,6 +76,10 @@ def send():
     socketio.emit('some event', {'data': 42}, namespace='/test')
     return 'ok'
 
+@app.route('/foo') # FIXME eventually replaces index route...
+def foo():
+    timestamp = datetime.datetime.now().isoformat()
+    return render_template('new.html', timestamp=timestamp)
 
 @app.route('/')
 def index():

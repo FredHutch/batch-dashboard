@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block pagejs %}
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.4.2/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.flash.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.html5.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.print.min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.3.1/js/buttons.bootstrap.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/batch-dashboard-new.js?timestamp={{timestamp}}"></script>{% endblock %}
+
+
+{% block content %}
+<table cellpadding="0" cellspacing="0" border="0" class="display cell-border" id="example">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Age</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+
+<h2>bla</h2>
+
+<table cellpadding="0" cellspacing="0" border="0" class="display cell-border" id="comp_env_table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Minimum vCPUs</th>
+      <th>Desired vCPUs</th>
+      <th>Maximum vCPUs</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+
+
+{% endblock %}
