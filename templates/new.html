@@ -21,8 +21,10 @@ header > h1 { display: inline-block; }
 header span { margin-left: 100px; }
 </style>
 
-<button title="reload table">⟳
-</button>
+
+<ul>
+  <li><a href="#compute-environments">Compute Environments</a></li>
+</ul>
 
 <table cellpadding="0" cellspacing="0" border="0" class="display cell-border" id="example">
   <thead>
@@ -38,16 +40,11 @@ header span { margin-left: 100px; }
 
 
 <header>
-  <h1>Text</h1>
-  <button title="reload table">⟳
+  <h1 id="compute-environments">Compute Environments</h1>
+  <button id="reload-compute-environments" title="reload table">⟳
   </button>
 </header>
 
-<h2>bla
-    <button title="reload table">⟳
-    </button>
-
-</h2>
 
 <table cellpadding="0" cellspacing="0" border="0" class="display cell-border" id="comp_env_table">
   <thead>
@@ -63,6 +60,137 @@ header span { margin-left: 100px; }
   </tbody>
 </table>
 
+
+{# modals #}
+
+{# compute environment modal #}
+<div id="env_dialog_displayer"></div>
+<div id="env_dialog_holder">
+<div class="modal fade" id="REPLACE_ME" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+          {#  FIXME this does not close #}
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Compute environment details</h4>
+      </div>
+      <div class="modal-body">
+        <h3>Overview</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Compute environment name:</b></td>
+            <td align="left"><span data-bind='text: computeEnvironmentName'></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Compute environment ARN:</b></td>
+            <td align="left"><span data-bind="text: computeEnvironmentArn"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Type:</b></td>
+            <td align="left"><span data-bind="text: type"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Status:</b></td>
+            <td align="left"><span data-bind="text: status"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>State:</b></td>
+            <td align="left"><span data-bind="text: state"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Service role:</b></td>
+            <td align="left"><span data-bind="text: serviceRole"></span></td>
+          </tr>
+        </table>
+
+        <h2>Compute Resources</h2>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Minimum vCPUs:</b></td>
+            <td align="left"><span data-bind="text: computeResources.minvCpus"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Desired vCPUs:</b></td>
+            <td align="left"><span data-bind="text: computeResources.desiredvCpus"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Maximum vCPUs:</b></td>
+            <td align="left"><span data-bind="text: computeResources.maxvCpus"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Instance types:</b></td>
+            <td align="left">
+              <span data-bind="foreach: computeResources.instanceTypes"><!-- ko if: $index() > 0 -->, <!-- /ko --><span data-bind="text:$data"></span></span>
+            </td>
+          </tr>
+          <tr>
+            <td align="right"><b>Instance role:</b></td>
+            <td align="left"><span data-bind"text: computeResources.instanceRole"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Spot fleet role:</b></td>
+            <td align="left">
+                <span data-bind="text: computeResources.spotIamFleetRole"></span>
+            </td>
+          </tr>
+          <tr>
+            <td align="right"><b>EC2 Keypair:</b></td>
+            <td align="left"><span data-bind="text: computeResources.ec2KeyPair"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>AMI id:</b></td>
+            <td align="left"><span data-bind="text: computeResources.imageId"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>vpcId:</b></td>
+            <td align="left">{# leaving this alone for now FIXME #}</td>
+          </tr>
+          <tr>
+            <td align="right"><b>Subnets:</b></td>
+            <td align="left">
+              <span data-bind="foreach: computeResources.subnets"><!-- ko if: $index() > 0 -->, <!-- /ko --><span data-bind="text:$data"></span></span>
+            </td>
+          </tr>
+          <tr>
+            <td align="right"><b>Security Groups:</b></td>
+            <td align="left">
+              <span data-bind="foreach: computeResources.securityGroupIds"><!-- ko if: $index() > 0 -->, <!-- /ko --><span data-bind="text:$data"></span></span>
+            </td>
+          </tr>
+
+        </table>
+
+
+
+
+
+        <h3>EC2 Tags</h3>
+
+        <table class="paddingBetweenCols dynamicDialogTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody data-bind="foreach: {data: Object.keys(computeResources.tags)}">
+            <tr>
+              <td data-bind="text: $data"></td>
+              <td data-bind="text: $parent.computeResources.tags[$data]"></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_env_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
 
 
 {% endblock %}

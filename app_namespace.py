@@ -130,6 +130,10 @@ def describe_job():
     ret = util.describe_job(job_id)
     return jsonify(ret)
 
+@app.route("/describe_job_definitions", methods=["GET"])
+def describe_job_definitions():
+    ret = util.describe_job_definitions()
+    return jsonify(ret)
 
 @app.route("/describe_job_definition", methods=["GET"])
 def describe_job_definition():

@@ -136,6 +136,15 @@ def describe_job_definition(jobdef_id):
     defs = BATCH.describe_job_definitions(jobDefinitionName=jobdef)['jobDefinitions']
     return [x for x in defs if x['revision'] == revision][0]
 
+def describe_job_definitions():
+    "get all job definitions"
+
+    jobdefs = do_paginated_batch_operation("describe_job_definitions",
+                                           "jobDefinitions")
+    jobdefs = sorted(jobdefs,
+                     key=lambda x: (x['jobDefinitionName'].lower(), -x['revision']))
+    return jobdefs
+
 def get_log_events(job_id, attempt, next_token, start_from_head):
     "get log events & timestamps for one job"
     job = BATCH.describe_jobs(jobs=[job_id])['jobs'][0]
