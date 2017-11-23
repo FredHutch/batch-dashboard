@@ -41,19 +41,11 @@ ko.unapplyBindings = function ($node, remove) {
 
 
 var reloadComputeEnvironmentTable = function(envs, envTable) {
-  console.log("inside reloadComputeEnvironmentTable()... ");
   $.getJSON('/describe_envs').done(function(data) {
-    // console.log("we got data! ");
-    // console.log(data);
     fullListOfEnvironments = data;
     ko.mapping.fromJS(
       fullListOfEnvironments, {
         key: function(data) {
-          console.log("data are ");
-          // console.log(data);
-          console.log(data.computeEnvironmentName);
-          // console.log("unwrapped:");
-          console.log(ko.utils.unwrapObservable(data.computeEnvironmentName)); // ??
           return ko.utils.unwrapObservable(data.computeEnvironmentName); // ??
         },
         create: function(options) {
@@ -71,6 +63,39 @@ var reloadComputeEnvironmentTable = function(envs, envTable) {
   });
 
 }
+
+//
+
+var reloadJobDefinitionTable = function(defs, defTable) {
+  $.getJSON('/describe_job_definitions').done(function(data) {
+    fullListOfJobDefinitions = data;
+    fullListOfJobDefinitions = fullListOfJobDefinitions.map(function(x, index) {
+      if (!x.hasOwnProperty('retryStrategy')) {
+          x['retryStrategy'] = {attempts: 1};
+      }
+      return x;
+  });
+    ko.mapping.fromJS(
+      fullListOfJobDefinitions, {
+        key: function(data) {
+          return ko.utils.unwrapObservable(data.jobDefinitionName) + ":" + ko.utils.unwrapObservable(data.revision); // ??
+        },
+        create: function(options) {
+          return new JobDefinition({
+            jobDefinitionName: options.data.jobDefinitionName,
+            revision: options.data.revision,
+            vcpus: options.data.containerProperties.vcpus,
+            memory: options.data.containerProperties.memory,
+            image: options.data.containerProperties.image
+        }, defTable);
+        }
+      },
+      defs
+    );
+  });
+}
+
+
 
 
 // Person object
@@ -124,12 +149,34 @@ var ComputeEnvironment = function(data, dt) {
   });
 };
 
+//
+
+var JobDefinition = function(data, dt) {
+  this.jobDefinitionName = ko.observable(data.jobDefinitionName);
+  this.revision = ko.observable(data.revision);
+  this.vcpus = ko.observable(data.vcpus);
+  this.memory = ko.observable(data.memory);
+  this.image = ko.observable(data.image);
+
+  // Subscribe a listener to the observable properties for the table
+  // and invalidate the DataTables row when they change so it will redraw
+  var that = this;
+  $.each(['jobDefinitionName', 'revision', 'vcpus', 'memory', 'image'], function(i, prop) {
+    that[prop].subscribe(function(val) {
+      // Find the row in the DataTable and invalidate it, which will
+      // cause DataTables to re-read the data
+      var rowIdx = dt.column(0).data().indexOf(that.jobDefinitionName());
+      dt.row(rowIdx).invalidate();
+    });
+  });
+};
+
+
 
 // "global" variables
 
 var fullListOfEnvironments = [];
-var compEnvDialogBinding = null;
-
+var fullListOfJobDefinitions = [];
 
 // Initial data set
 var data = [{
@@ -152,13 +199,6 @@ var data = [{
   }
 ];
 
-var data0 = [{
-  computeEnvironmentName: 'foo',
-  type: 'fooey',
-  minvCpus: 0,
-  desiredvCpus: 1,
-  maxvCpus: 2
-}];
 
 
 $(document).ready(function() {
@@ -166,6 +206,7 @@ $(document).ready(function() {
   // initial mappings
   var people = ko.mapping.fromJS([]);
   var envs = ko.mapping.fromJS([]);
+  var defs = ko.mapping.fromJS([]);
 
 
   // dataTables
@@ -208,6 +249,32 @@ $(document).ready(function() {
     }]
   });
 
+  var jobDefTable = $("#job_def_table").DataTable({
+     columns: [{
+             data: 'jobDefinitionName()'
+         },
+         {
+             data: 'revision()'
+         },
+         {
+             data: 'vcpus()'
+         },
+         {
+             data: 'memory()'
+         },
+         {
+             data: 'image()'
+         }
+     ],
+     columnDefs: [{
+         "render": function(data, type, row) {
+           return '<a class="jobdef" id="' + data + ':' + row.revision() + '">' + data + '</a>';
+         },
+         "targets": 0
+
+     }]
+  });
+
   //subscribe models to arrayChanged
 
   // Update the table when the `people` array has items added or removed
@@ -231,6 +298,19 @@ $(document).ready(function() {
     }
   );
 
+  defs.subscribeArrayChanged(
+    function(addedItem) {
+      jobDefTable.row.add(addedItem).draw();
+    },
+    function(deletedItem) {
+      //FIXME does not take into account compound key!
+      // does it matter? this table will never change dynamically....
+      var rowIdx = jobDefTable.column(0).data().indexOf(deletedItem.jobDefinitionName());
+      envTable.row(rowIdx).remove().draw();
+    }
+  );
+
+
 
   // Convert the data set into observable objects, and will also add the
   // initial data to the table
@@ -250,15 +330,18 @@ $(document).ready(function() {
 
   // reload event listeners
   $("#reload-compute-environments").click(function() {
-    console.log("you want to reload the compute environments table, eh?")
     reloadComputeEnvironmentTable(envs, envTable);
   });
+
+  $("#reload-job-definitions").click(function() {
+    reloadJobDefinitionTable(defs, jobDefTable); //dante
+  });
+
 
 
 // click listeners (for links in tables)
 
 $('#comp_env_table').on( 'click', '.compute_environment', function (event) {
-  console.log("in click handler for compute environment");
 
   var id = $(event.target).attr('id');
   var compEnv = $.grep(fullListOfEnvironments, function(e){return e.computeEnvironmentName == id;})[0];
@@ -284,15 +367,46 @@ $('#comp_env_table').on( 'click', '.compute_environment', function (event) {
 });
 
 
+//
+
+
+
+$('#job_def_table').on( 'click', '.jobdef', function (event) {
+
+  var id = $(event.target).attr('id');
+  var segs = id.split(":");
+  var jobDefName = segs[0]
+  var revision = parseInt(segs[1]);
+  var jobDef = $.grep(fullListOfJobDefinitions, function(e){return e.jobDefinitionName == jobDefName && e.revision == revision ;})[0];
+  /*
+  What follows is a sort of hacky way to make sure that dialogs don't have old cruft
+  in them (from opening the same dialog on a different data model).
+  So we copy the HTML of the dialog into a new div, give it a unique ID, and then
+  bind the knockout data into it. I am sure there is a better way, perhaps
+  at http://aboutcode.net/2012/11/15/twitter-bootstrap-modals-and-knockoutjs.html
+  but that requires you to jump through hoops before seeing the code.
+  */
+
+  var html = $("#jobdef_dialog_holder").html();
+  var modal_id = "job_def_modal_" + Date.now();
+  html = html.replace("REPLACE_ME", modal_id);
+  $("#jobdef_dialog_displayer").html(html);
+  var elementToBind = $("#" + modal_id)[0];
+
+  var viewModel = ko.mapping.fromJS(jobDef);
+  ko.applyBindings(viewModel, elementToBind);
+
+  $("#" + modal_id).modal();
+});
+
+
 
   // Examples:
 
   // Update a field
-  // console.log("Changed Allan to Allan3");
   // people()[0].first('Allan3');
 
   // Add an item
-  // console.log("adding a person");
   // people.push(new Person({
   //   id: 3,
   //   first: "John",
@@ -307,7 +421,6 @@ $('#comp_env_table').on( 'click', '.compute_environment', function (event) {
 
 
   // envs()[0].computeEnvironmentName('plappppe');
-  // console.log(envs()[0].computeEnvironmentName());
   // envs.push(new ComputeEnvironment({ // works!
   // computeEnvironmentName: 'newy',
   // type: 'haha',
@@ -316,12 +429,11 @@ $('#comp_env_table').on( 'click', '.compute_environment', function (event) {
   // maxvCpus: 23
   // }, envTable));
 
-  // console.log("-----------");
 
   // envs.shift();
 
   reloadComputeEnvironmentTable(envs, envTable);
-
+  reloadJobDefinitionTable(defs, jobDefTable);
 
 
 });

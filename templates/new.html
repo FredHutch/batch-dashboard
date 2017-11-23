@@ -63,9 +63,8 @@ header span { margin-left: 100px; }
 
 
 
-<h2 id="job_def_header">Job Definitions</h2>
 <header>
-  <h1 id="job_def_header">Compute Environments</h1>
+  <h1 id="job_def_header">Job Definitions</h1>
   <button id="reload-job-definitions" title="reload table">⟳
   </button>
 </header>
@@ -222,5 +221,179 @@ header span { margin-left: 100px; }
 </div>
 </div>
 
+{# job definition modal #}
+<div id="jobdef_dialog_displayer"></div>
+<div id="jobdef_dialog_holder">
+
+<div class="modal fade" id="REPLACE_ME" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Job Definition <span data-bind="text: jobDefinitionName"></span>:<span data-bind="text: revision"></span></h4>
+      </div>
+      <div class="modal-body">
+        <h3>Job definition attributes</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Job definition name : revision: </b></td>
+            <td align="left"><span data-bind="text: jobDefinitionName"></span>:<span data-bind="text: revision"></span></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Job definition ARN: </b></td>
+            <td align="left" data-bind="text: jobDefinitionArn"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Status: </b></td>
+            <td align="left" data-bind="text: status"></td>
+          </tr>
+        </table>
+
+        <h3>Resource Requirements</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Job role ARN: </b></td>
+            <td align="left" data-bind="text: containerProperties.jobRoleArn"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Image: </b></td>
+            <td align="left" data-bind="text: containerProperties.image"></td>
+          </tr>
+        </table>
+
+<h3>Environment</h3>
+
+<table border="0" class="paddingBetweenCols">
+  <tr>
+    <td align="right"><b>Command: </b></td>
+    <td class="breakMe" align="left">
+        <span data-bind="foreach: containerProperties.command"><!-- ko if: $index() > 0 -->, <!-- /ko --><span data-bind="text:$data"></span></span>
+    </td>
+  </tr>
+  <tr>
+    <td align="right"><b>vCPUs: </b></td>
+    <td align="left" data-bind="text: containerProperties.vcpus"></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Memory (MB): </b></td>
+    <td align="left" data-bind="text: containerProperties.memory"></td>
+  </tr>
+</table>
+
+<h3>Retry Strategy</h3>
+
+<table border="0" class="paddingBetweenCols">
+  <tr>
+    <td align="right"><b>Attempts: </b></td>
+    <td align="left" data-bind="text: retryStrategy.attempts"></td>
+  </tr>
+</table>
+
+
+<h3>Parameters</h3>
+
+<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_parameters">
+  <thead>
+    <tr>
+      <th align="right">Name</th>
+      <th align="left">Value</th>
+    </tr>
+  </thead>
+  <tbody data-bind="foreach: {data: Object.keys(parameters)}">
+    <tr>
+      <td data-bind="text: $data"></td>
+      <td data-bind="text: $parent.parameters[$data]"></td>
+    </tr>
+  </tbody>
+</table>
+
+
+<h3>Environment variables</h3>
+
+<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_envvars">
+  <thead>
+    <tr>
+      <th align="right">Name</th>
+      <th align="left">Value</th>
+    </tr>
+  </thead>
+  <tbody data-bind="foreach: containerProperties.environment">
+    <tr>
+      <td data-bind="text: $data['name']"></td>
+      <td class="breakMe" data-bind="text: $data['value']"></td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h3>uLimits</h3>
+
+<table id="dialog_jobdef_ulimits" class="paddingBetweenCols dynamicDialogTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Soft limit</th>
+      <th>Hard limit</th>
+  </thead>
+
+  <tbody data-bind="foreach: containerProperties.ulimits">
+      <tr>
+          <td data-bind="text: $data.name"></td>
+          <td data-bind="text: $data.softLimit"></td>
+          <td data-bind="text: $data.hardLimit"></td>
+      </tr>
+
+  </tbody>
+</table>
+
+
+<h3>Volumes</h3>
+
+<table id="dialog_jobdef_volumes" class="paddingBetweenCols dynamicDialogTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Source path</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+<h3>Mount points</h3>
+
+<p><b id="dialog_jobdef_filesystemstatus">{# Read only filesystem #}</b></p>
+
+<table id="dialog_jobdef_mountpoints" class="paddingBetweenCols dynamicDialogTable">
+  <thead>
+    <tr>
+      <th>Container path</th>
+      <th>Source volume</th>
+      <th>Read only</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+
+
+{# end modals #}
 
 {% endblock %}
