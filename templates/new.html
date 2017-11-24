@@ -359,8 +359,11 @@ header span { margin-left: 100px; }
       <th>Source path</th>
   </thead>
 
-  <tbody>
-
+  <tbody  data-bind="foreach: containerProperties.volumes">
+      <tr>
+          <td data-bind="text: $data.name"></td>
+          <td data-bind="text: $data.host.sourcePath"></td>
+      </tr>
   </tbody>
 </table>
 
@@ -376,7 +379,12 @@ header span { margin-left: 100px; }
       <th>Read only</th>
   </thead>
 
-  <tbody>
+  <tbody data-bind="foreach: containerProperties.mountPoints">
+      <tr>
+          <td data-bind="text: $data.containerPath"></td>
+          <td data-bind="text: $data.sourceVolume"></td>
+          <td data-bind="text: $data.readOnly"></td>
+      </tr>
 
   </tbody>
 </table>
@@ -384,7 +392,7 @@ header span { margin-left: 100px; }
 
       </div>
       <div class="modal-footer">
-        <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="dialog_jobdef_close" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
