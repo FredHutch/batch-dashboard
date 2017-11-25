@@ -1,8 +1,22 @@
 "utilities"
 
 import datetime
+import os
+import json
 
 import boto3
+import pymongo
+from bson import ObjectId
+
+class JSONEncoder(json.JSONEncoder):
+    "custom json encoder for objects from mongodb"
+    def default(self, o): # pylint: disable=method-hidden
+        if isinstance(o, ObjectId):
+            return str(o)
+        elif isinstance(o, datetime.datetime):
+            return int(o.timestamp())
+
+        return json.JSONEncoder.default(self, o)
 
 
 STATES = ['SUBMITTED', 'PENDING', 'RUNNABLE', 'STARTING',
@@ -179,3 +193,17 @@ def get_log_events(job_id, attempt, next_token, start_from_head):
     # return output, result['nextForwardToken'], result['nextBackwardToken']
     retdict['rows'] = output
     return retdict
+
+def get_jobs_from_mongo():
+    "get events from mongodb"
+    client = pymongo.MongoClient(os.getenv('MONGO_URL'))
+    db0 = client.batch_events
+    coll = db0['events']
+    now = datetime.datetime.now()
+    then = now - datetime.timedelta(days=14) # 2 weeks ago
+    pipeline = [
+        {"$match": {"timestamp": {"$gt": then}}},
+        {'$sort': {"timestamp": 1}},
+        {"$group": {"_id": "$jobId", "last_doc": {"$last": "$$ROOT"}}}]
+    res = list(coll.aggregate(pipeline))
+    return JSONEncoder().encode(res)

@@ -19,7 +19,7 @@ async_mode = None
 
 app = Flask(__name__, static_url_path='')
 
-required_env_vars = ['QUEUE_URL', 'APP_SECRET']
+required_env_vars = ['QUEUE_URL', 'APP_SECRET', 'MONGO_URL']
 notset = False
 for var in required_env_vars:
     if not os.getenv(var):
@@ -162,6 +162,16 @@ def job_log():
                            status=result['jobStatus'],
                            attempt=attempt,
                            start_from_head=start_from_head)
+
+@app.route("/get_jobs", methods=['GET'])
+def get_jobs():
+    jsondata = util.get_jobs_from_mongo()
+    response = app.response_class(
+        response=jsondata,
+        status=200,
+        mimetype='application/json'
+    )
+    return response
 
 
 class MyNamespace(Namespace):

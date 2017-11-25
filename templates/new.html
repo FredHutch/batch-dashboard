@@ -24,6 +24,7 @@ header span { margin-left: 100px; }
 
 <ul>
   <li><a href="#compute-environments">Compute Environments</a></li>
+  <li><a href="#jobs_header">Jobs</a></li>
   <li><a href="#job_def_header">Job Definitions</a></li>
 </ul>
 
@@ -38,6 +39,53 @@ header span { margin-left: 100px; }
   <tbody>
   </tbody>
 </table>
+
+
+<header>
+  <h1 id="jobs_header">Jobs</h1>
+  <button id="reload-jobs" title="reload table">⟳
+  </button>
+</header>
+
+<table id="job_table" class="display">
+  <thead>
+    <tr>
+      <th>Queue</th>
+      <th>Created At</th>
+      <th>Job ID</th>
+      <th>Job Name</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+  <tfoot>
+      <tr>
+          <th>
+              <select id="queue_filter">
+                  <option>No Filter</option>
+                  {# FIXME TODO replace with ko foreach?? #}
+                  {% for qname in queue_names %}
+                      <option>{{qname}}</option>
+                  {% endfor %}
+              </select>
+          </th>
+          <th></th>
+          <th></th>
+          <th></th>
+          <th>
+              <select id="state_filter">
+                  <option>No Filter</option>
+                  {# FIXME TODO replace with ko foreach?? #}
+                  {% for state in states %}
+                      <option>{{state}}</option>
+                  {% endfor %}
+              </select>
+          </th>
+      </tr>
+  </tfoot>
+</table>
+
 
 
 <header>
@@ -403,5 +451,17 @@ header span { margin-left: 100px; }
 
 
 {# end modals #}
+
+
+    <div id="log" style="display: none;"></div>
+
+<p>&nbsp;</p>
+
+<p>
+  <a target="_blank" href="https://fredhutch.github.io/aws-batch-at-hutch-docs/">[Documentation for AWS Batch at Fred Hutch]</a> |
+  <a target="_blank" href="https://github.com/FredHutch/batch-dashboard">[Code/Report an Issue]</a>
+</p>
+
+
 
 {% endblock %}

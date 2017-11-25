@@ -95,7 +95,7 @@ var reloadJobDefinitionTable = function(defs, defTable) {
   });
 }
 
-
+// TODO: add reloadJobTable()
 
 
 // Person object
@@ -172,11 +172,13 @@ var JobDefinition = function(data, dt) {
 };
 
 
+// TODO: add Job object
 
 // "global" variables
 
 var fullListOfEnvironments = [];
 var fullListOfJobDefinitions = [];
+var fullListOfJobs = [];
 
 // Initial data set
 var data = [{
@@ -207,6 +209,7 @@ $(document).ready(function() {
   var people = ko.mapping.fromJS([]);
   var envs = ko.mapping.fromJS([]);
   var defs = ko.mapping.fromJS([]);
+  var jobs = ko.mapping.fromJS([]);
 
 
   // dataTables
@@ -273,6 +276,40 @@ $(document).ready(function() {
          "targets": 0
 
      }]
+  });
+
+  var jobTable = $("#job_table").DataTable({
+     columns: [
+       {
+         data: 'queue()'
+       },
+       {
+         data: 'createdAt()'
+       },
+       {
+         data: 'jobId()'
+       },
+       {
+         data: 'jobName()'
+       },
+       {
+         data: 'status()'
+       }
+   ],
+   columnDefs: [
+     {
+       "render": function(data, type, row) {
+         return '<a class="job_id" id="' + data + '">' + data + '</a>';
+       },
+       "targets": 2
+     },
+     {
+         "render": function(data, type, row) {
+             return new Date(data);
+         },
+         "targets": 1
+     }
+   ]
   });
 
   //subscribe models to arrayChanged

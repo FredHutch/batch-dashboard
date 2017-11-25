@@ -8,6 +8,7 @@ services:
     # - BATCH_DASHBOARD_AWS_REGION
     # - BATCH_DASHBOARD_QUEUE_URL
     # - BATCH_DASHBOARD_SECRET_KEY
+    # - BATCH_DASHBOARD_MONGO_URL
     ports:
       - "8000"
     labels:
@@ -20,4 +21,6 @@ services:
 #   BATCH_DASHBOARD_QUEUE_URL:
 #     external: true
 #   BATCH_DASHBOARD_SECRET_KEY:
+#     external: true
+#   BATCH_DASHBOARD_MONGO_URL:
 #     external: true
