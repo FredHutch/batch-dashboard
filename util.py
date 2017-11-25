@@ -203,8 +203,9 @@ def get_jobs_from_mongo():
     then = now - datetime.timedelta(days=14) # 2 weeks ago
     pipeline = [
         {"$match": {"timestamp": {"$gt": then}}},
-        {'$sort': {"timestamp": 1}},
-        {"$group": {"_id": "$jobId", "last_doc": {"$last": "$$ROOT"}}}]
+        {'$sort': {"statusNum": -1}},
+        {"$group": {"_id": "$jobId", 'maxStatus': {"$max": "$statusNum"},
+                    "first_doc": {"$first": "$$ROOT"}}}]
     res = list(coll.aggregate(pipeline))
-    res = [x['last_doc'] for x in res]
+    res = [x['first_doc'] for x in res]
     return JSONEncoder().encode(res)
