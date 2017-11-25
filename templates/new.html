@@ -64,10 +64,9 @@ header span { margin-left: 100px; }
           <th>
               <select id="queue_filter">
                   <option>No Filter</option>
-                  {# FIXME TODO replace with ko foreach?? #}
-                  {% for qname in queue_names %}
-                      <option>{{qname}}</option>
-                  {% endfor %}
+                  <!-- ko foreach: queues -->
+                      <option data-bind="text: $data"></option>
+                  <!-- /ko -->
               </select>
           </th>
           <th></th>
@@ -76,10 +75,9 @@ header span { margin-left: 100px; }
           <th>
               <select id="state_filter">
                   <option>No Filter</option>
-                  {# FIXME TODO replace with ko foreach?? #}
-                  {% for state in states %}
-                      <option>{{state}}</option>
-                  {% endfor %}
+                  <!-- ko foreach: statuses -->
+                      <option data-bind="text: $data"></option>
+                  <!-- /ko -->
               </select>
           </th>
       </tr>
@@ -441,6 +439,214 @@ header span { margin-left: 100px; }
       </div>
       <div class="modal-footer">
         <button type="button" id="dialog_jobdef_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+{# job modal #}
+<div id="job_dialog_displayer"></div>
+<div id="job_dialog_holder">
+<div class="modal fade" id="REPLACE_ME" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+          {#  FIXME this does not close #}
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="dialog_env_header">Job details</h4>
+      </div>
+      <div class="modal-body">
+        <h3>Job Status</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Status:</b></td>
+            <td align="left" id="dialog_job_status"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Created at:</b></td>
+            <td align="left" id="dialog_job_createdat"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Started at:</b></td>
+            <td align="left" id="dialog_job_startedat"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Queue:</b></td>
+            <td align="left" id="dialog_job_queue"></td>
+          </tr>
+        </table>
+
+        <h2>Job Attributes</h2>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <td align="right"><b>Job id:</b></td>
+            <td align="left" id="dialog_job_id"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Job name:</b></td>
+            <td align="left" id="dialog_job_name"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Job Definition:</b></td>
+            <td align="left" id="dialog_job_jobdef"></td>
+          </tr>
+          <tr>
+            <td align="right"><b>Depends on:</b></td>
+            <td align="left" id="dialog_job_dependson"></td>
+          </tr>
+
+        </table>
+
+
+<h2>Attempts</h2>
+
+<table id="dialog_job_attempts" class="paddingBetweenCols dynamicDialogTable">
+  <thead>
+    <tr>
+      <th>Attempts</th>
+      <th>Exit code</th>
+      <th>Start time</th>
+      <th>End time</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+<h2>Resource requirements</h2>
+
+<table border="0" class="paddingBetweenCols">
+  <tr>
+    <td align="right"><b>Job role:</b></td>
+    <td align="left" id="dialog_job_role"></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Container image:</b></td>
+    <td align="left" id="dialog_job_containerimage"></td>
+  </tr>
+</table>
+
+
+
+<h2>Environment</h2>
+
+<table border="0" class="paddingBetweenCols">
+  <tr>
+    <td align="right"><b>Command:</b></td>
+    <td align="left" class="breakMe" id="dialog_job_command"></td>
+  </tr>
+  <tr>
+    <td align="right"><b>vCPUs:</b></td>
+    <td align="left" id="dialog_job_vcpus"></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Memory:</b></td>
+    <td align="left" id="dialog_job_memory"></td>
+  </tr>
+
+</table>
+
+<h2>Environment variables</h2>
+
+<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_job_envvars">
+  <thead>
+    <tr>
+      <th align="right">Name</th>
+      <th align="left">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+
+{#
+  <tr>
+    <td align="right"><b></b></td> ## key
+    <td align="left"></td> ## value
+  </tr>
+#}
+</table>
+
+
+<h2>Parameters</h2>
+
+<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_job_parameters">
+  <thead>
+    <tr>
+      <th align="right">Name</th>
+      <th align="left">Value</th>
+    </tr>
+
+  </thead>
+  <tbody>
+  </tbody>
+{#
+  <tr>
+    <td align="right"><b></b></td> ## key
+    <td align="left"></td> ## value
+  </tr>
+#}
+</table>
+
+<h2>uLimits</h2>
+
+<table id="dialog_job_ulimits" class="paddingBetweenCols dynamicDialogTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Soft limit</th>
+      <th>Hard limit</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+
+<h2>Volumes</h2>
+
+<table id="dialog_job_volumes" class="paddingBetweenCols dynamicDialogTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Source path</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+<h2>Mount points</h2>
+
+<p><b id="dialog_job_filesystemstatus">{# Read only filesystem #}</b></p>
+
+<table id="dialog_job_mountpoints" class="paddingBetweenCols dynamicDialogTable">
+  <thead>
+    <tr>
+      <th>Container path</th>
+      <th>Source volume</th>
+      <th>Read only</th>
+  </thead>
+
+  <tbody>
+
+  </tbody>
+</table>
+
+<h2>CloudWatch logs</h2>
+
+<p id="dialog_job_log_link"></p>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_env_close" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>

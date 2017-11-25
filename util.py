@@ -206,4 +206,5 @@ def get_jobs_from_mongo():
         {'$sort': {"timestamp": 1}},
         {"$group": {"_id": "$jobId", "last_doc": {"$last": "$$ROOT"}}}]
     res = list(coll.aggregate(pipeline))
+    res = [x['last_doc'] for x in res]
     return JSONEncoder().encode(res)

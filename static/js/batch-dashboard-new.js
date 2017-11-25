@@ -40,6 +40,19 @@ ko.unapplyBindings = function ($node, remove) {
 };
 
 
+var getUnique = function(inputArray)
+{
+	var outputArray = [];
+	for (var i = 0; i < inputArray.length; i++)
+	{
+		if ((jQuery.inArray(inputArray[i], outputArray)) == -1)
+		{
+			outputArray.push(inputArray[i]);
+		}
+	}
+	return outputArray;
+}
+
 var reloadComputeEnvironmentTable = function(envs, envTable) {
   $.getJSON('/describe_envs').done(function(data) {
     fullListOfEnvironments = data;
@@ -95,7 +108,37 @@ var reloadJobDefinitionTable = function(defs, defTable) {
   });
 }
 
-// TODO: add reloadJobTable()
+
+var reloadJobTable = function(jobs, jobTable) {
+  $.getJSON('/get_jobs').done(function(data) {
+    fullListOfJobs = data;
+
+    queues = ko.observableArray(getUnique(fullListOfJobs.map(function(x) {return x.jobQueue.split("/").pop()})).sort());
+    ko.applyBindings(queues, $("#queue_filter")[0]); // dante
+
+    statuses = ko.observableArray(states);
+    ko.applyBindings(statuses, $("#state_filter")[0]);
+
+    ko.mapping.fromJS(
+      fullListOfJobs, {
+        key: function(data) {
+          return ko.utils.unwrapObservable(data.jobId);
+        },
+        create: function(options) {
+          return new Job({
+            jobId: options.data.jobId,
+            jobQueue: options.data.jobQueue.split("/").pop(),
+            createdAt: options.data.createdAt,
+            jobName: options.data.jobName,
+            status: options.data.status
+        }, jobTable);
+        }
+      },
+      jobs
+    );
+  });
+}
+
 
 
 // Person object
@@ -149,7 +192,6 @@ var ComputeEnvironment = function(data, dt) {
   });
 };
 
-//
 
 var JobDefinition = function(data, dt) {
   this.jobDefinitionName = ko.observable(data.jobDefinitionName);
@@ -172,13 +214,38 @@ var JobDefinition = function(data, dt) {
 };
 
 
-// TODO: add Job object
+
+var Job = function(data, dt) {
+  this.jobId = ko.observable(data.jobId);
+  this.jobName = ko.observable(data.jobName);
+  this.status = ko.observable(data.status);
+  this.jobQueue = ko.observable(data.jobQueue);
+  this.createdAt = ko.observable(data.createdAt);
+
+  // Subscribe a listener to the observable properties for the table
+  // and invalidate the DataTables row when they change so it will redraw
+  var that = this;
+  $.each(['jobId', 'jobName', 'status', 'jobQueue', 'createdAt'], function(i, prop) {
+    that[prop].subscribe(function(val) {
+      // Find the row in the DataTable and invalidate it, which will
+      // cause DataTables to re-read the data
+      var rowIdx = dt.column(0).data().indexOf(that.jobId());
+      dt.row(rowIdx).invalidate();
+    });
+  });
+};
+
+
 
 // "global" variables
 
 var fullListOfEnvironments = [];
 var fullListOfJobDefinitions = [];
 var fullListOfJobs = [];
+var states = ['SUBMITTED', 'PENDING', 'RUNNABLE', 'STARTING',
+          'RUNNING', 'FAILED', 'SUCCEEDED'];
+var queues;
+var statuses;
 
 // Initial data set
 var data = [{
@@ -281,7 +348,7 @@ $(document).ready(function() {
   var jobTable = $("#job_table").DataTable({
      columns: [
        {
-         data: 'queue()'
+         data: 'jobQueue()'
        },
        {
          data: 'createdAt()'
@@ -311,6 +378,26 @@ $(document).ready(function() {
      }
    ]
   });
+
+  // Apply the search
+   jobTable.columns().every( function () {
+       var that = this;
+
+       $( 'select', this.footer() ).on( 'change', function () {
+           console.log("your filter is " + this.value);
+           var searchString = this.value;
+           if (this.value == "No Filter") {
+               searchString = "";
+               console.log("searchString changed to " + searchString);
+           }
+           if ( that.search() !== searchString ) {
+               that
+                   .search( searchString )
+                   .draw();
+           }
+       } );
+   } );
+
 
   //subscribe models to arrayChanged
 
@@ -348,6 +435,17 @@ $(document).ready(function() {
   );
 
 
+  jobs.subscribeArrayChanged(
+    function(addedItem) {
+      jobTable.row.add(addedItem).draw();
+    },
+    function(deletedItem) {
+      var rowIdx = jobTable.column(0).data().indexOf(deletedItem.jobId());
+      jobTable.row(rowIdx).remove().draw();
+    }
+  );
+
+
 
   // Convert the data set into observable objects, and will also add the
   // initial data to the table
@@ -371,9 +469,12 @@ $(document).ready(function() {
   });
 
   $("#reload-job-definitions").click(function() {
-    reloadJobDefinitionTable(defs, jobDefTable); //dante
+    reloadJobDefinitionTable(defs, jobDefTable);
   });
 
+  $("#reload-jobs").click(function() {
+    reloadJobTable(jobs, jobTable);
+  });
 
 
 // click listeners (for links in tables)
@@ -436,6 +537,34 @@ $('#job_def_table').on( 'click', '.jobdef', function (event) {
   $("#" + modal_id).modal();
 });
 
+//
+
+$('#job_table').on( 'click', '.job_id', function (event) {
+
+  var id = $(event.target).attr('id');
+  /*
+  What follows is a sort of hacky way to make sure that dialogs don't have old cruft
+  in them (from opening the same dialog on a different data model).
+  So we copy the HTML of the dialog into a new div, give it a unique ID, and then
+  bind the knockout data into it. I am sure there is a better way, perhaps
+  at http://aboutcode.net/2012/11/15/twitter-bootstrap-modals-and-knockoutjs.html
+  but that requires you to jump through hoops before seeing the code.
+  */
+
+  var html = $("#job_dialog_holder").html();
+  var modal_id = "job_modal_" + Date.now();
+  html = html.replace("REPLACE_ME", modal_id);
+  $("#job_dialog_displayer").html(html);
+  var elementToBind = $("#" + modal_id)[0];
+  var job = $.grep(fullListOfJobs, function(e){return e.jobId == id;})[0];
+
+  var viewModel = ko.mapping.fromJS(job);
+  ko.applyBindings(viewModel, elementToBind);
+
+  $("#" + modal_id).modal();
+});
+
+
 
 
   // Examples:
@@ -471,6 +600,7 @@ $('#job_def_table').on( 'click', '.jobdef', function (event) {
 
   reloadComputeEnvironmentTable(envs, envTable);
   reloadJobDefinitionTable(defs, jobDefTable);
+  reloadJobTable(jobs, jobTable);
 
 
 });
