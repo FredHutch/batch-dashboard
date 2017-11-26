@@ -463,19 +463,19 @@ header span { margin-left: 100px; }
         <table border="0" class="paddingBetweenCols">
           <tr>
             <td align="right"><b>Status:</b></td>
-            <td align="left" id="dialog_job_status"></td>
+            <td align="left" data-bind="text: status"></td>
           </tr>
           <tr>
             <td align="right"><b>Created at:</b></td>
-            <td align="left" id="dialog_job_createdat"></td>
+            <td align="left" data-bind="text: createdAt"></td>
           </tr>
           <tr>
             <td align="right"><b>Started at:</b></td>
-            <td align="left" id="dialog_job_startedat"></td>
+            <td align="left" data-bind="text: startedAt"></td>
           </tr>
           <tr>
             <td align="right"><b>Queue:</b></td>
-            <td align="left" id="dialog_job_queue"></td>
+            <td align="left" data-bind="text: jobQueue"></td>
           </tr>
         </table>
 

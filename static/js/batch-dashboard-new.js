@@ -557,7 +557,13 @@ $('#job_table').on( 'click', '.job_id', function (event) {
   $("#job_dialog_displayer").html(html);
   var elementToBind = $("#" + modal_id)[0];
   var job = $.grep(fullListOfJobs, function(e){return e.jobId == id;})[0];
-
+  job.createdAt = new Date(job.createdAt);
+  job.startedAt = new Date(job.startedAt);
+  job.attempts.map(function(x, i){
+     job['attempts'][i]['startedAt'] = new Date(x['startedAt']);
+     job['attempts'][i]['stoppedAt'] = new Date(x['stoppedAt']);
+  });
+  job.jobQueue = job.jobQueue.split("/").pop();
   var viewModel = ko.mapping.fromJS(job);
   ko.applyBindings(viewModel, elementToBind);
 
