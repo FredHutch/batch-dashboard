@@ -7,9 +7,11 @@ import json
 import boto3
 import pymongo
 from bson import ObjectId
+from bson.son import SON
 
 class JSONEncoder(json.JSONEncoder):
     "custom json encoder for objects from mongodb"
+    # pylint warning is a false positive, see https://github.com/PyCQA/pylint/issues/414
     def default(self, o): # pylint: disable=method-hidden
         if isinstance(o, ObjectId):
             return str(o)
@@ -159,9 +161,16 @@ def describe_job_definitions():
                      key=lambda x: (x['jobDefinitionName'].lower(), -x['revision']))
     return jobdefs
 
-def get_log_events(job_id, attempt, next_token, start_from_head):
+def get_log_events(job_id, attempt, next_token, start_from_head): # pylint: disable=too-many-locals
     "get log events & timestamps for one job"
-    job = BATCH.describe_jobs(jobs=[job_id])['jobs'][0]
+    job_arr = BATCH.describe_jobs(jobs=[job_id])['jobs']
+    if job_arr:
+        job = job_arr[0]
+    else:
+        coll = pymongo.MongoClient(os.getenv("MONGO_URL")).batch_events['events']
+        jobs = coll.find({'jobId': job_id}).sort([('statusNum', -1)]).limit(1)
+        for item in jobs:
+            job = item
     retdict = {"jobId": job['jobId'], "jobName": job['jobName'],
                "attempt": attempt, "rows": [],
                "jobStatus": job['status']}
@@ -202,10 +211,18 @@ def get_jobs_from_mongo():
     now = datetime.datetime.now()
     then = now - datetime.timedelta(days=14) # 2 weeks ago
     pipeline = [
+        # filter out records more than 2 weeks old
         {"$match": {"timestamp": {"$gt": then}}},
-        {'$sort': {"statusNum": -1}},
+        # important to sort by statusNum going into the pipeline
+        # because for each job, we only want the record with the
+        # most recent status.
+        {'$sort': {"statusNum": -1}}, # this turns out to be necessary.
+        # group by max value of statusNum for each jobId.
         {"$group": {"_id": "$jobId", 'maxStatus': {"$max": "$statusNum"},
-                    "first_doc": {"$first": "$$ROOT"}}}]
+                    "first_doc": {"$first": "$$ROOT"}}},
+        # results should be sorted by timestamp, descending.
+        {'$sort': SON([("first_doc.timestamp", -1)])},
+    ]
     res = list(coll.aggregate(pipeline))
     res = [x['first_doc'] for x in res]
     return JSONEncoder().encode(res)

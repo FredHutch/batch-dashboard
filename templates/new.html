@@ -484,21 +484,22 @@ header span { margin-left: 100px; }
         <table border="0" class="paddingBetweenCols">
           <tr>
             <td align="right"><b>Job id:</b></td>
-            <td align="left" id="dialog_job_id"></td>
+            <td align="left" data-bind="text: jobId"</td>
           </tr>
           <tr>
             <td align="right"><b>Job name:</b></td>
-            <td align="left" id="dialog_job_name"></td>
+            <td align="left" data-bind="text: jobName"></td>
           </tr>
           <tr>
             <td align="right"><b>Job Definition:</b></td>
-            <td align="left" id="dialog_job_jobdef"></td>
+            <td align="left" data-bind="text: jobDefinition"></td>
           </tr>
           <tr>
             <td align="right"><b>Depends on:</b></td>
-            <td align="left" id="dialog_job_dependson"></td>
+            <td align="left">
+                <span data-bind="foreach: dependsOn"><!-- ko if: $index() > 0 -->, <!-- /ko --><span data-bind="text:$data"></span></span>
+            </td>
           </tr>
-
         </table>
 
 
@@ -507,14 +508,20 @@ header span { margin-left: 100px; }
 <table id="dialog_job_attempts" class="paddingBetweenCols dynamicDialogTable">
   <thead>
     <tr>
-      <th>Attempts</th>
       <th>Exit code</th>
       <th>Start time</th>
       <th>End time</th>
   </thead>
 
-  <tbody>
-
+  <tbody data-bind="foreach: attempts">
+    <tr>
+        <td>
+            <span data-bind="text: $data.container.exitCode"></span>
+            <a target="_blank" data-bind="attr: {href: $data.logLink}">View logs</a>
+        </td>
+        <td data-bind="text: $data.startedAt"></td>
+        <td data-bind="text: $data.stoppedAt"></td>
+    </tr>
   </tbody>
 </table>
 
@@ -523,11 +530,11 @@ header span { margin-left: 100px; }
 <table border="0" class="paddingBetweenCols">
   <tr>
     <td align="right"><b>Job role:</b></td>
-    <td align="left" id="dialog_job_role"></td>
+    <td align="left" data-bind="text: container.jobRoleArn"></td>
   </tr>
   <tr>
     <td align="right"><b>Container image:</b></td>
-    <td align="left" id="dialog_job_containerimage"></td>
+    <td align="left" data-bind="text: container.image"></td>
   </tr>
 </table>
 
@@ -538,15 +545,17 @@ header span { margin-left: 100px; }
 <table border="0" class="paddingBetweenCols">
   <tr>
     <td align="right"><b>Command:</b></td>
-    <td align="left" class="breakMe" id="dialog_job_command"></td>
+    <td align="left" class="breakMe">
+        <span data-bind="foreach: container.command"><!-- ko if: $index() > 0 -->, <!-- /ko --><span data-bind="text:$data"></span></span>
+    </td>
   </tr>
   <tr>
     <td align="right"><b>vCPUs:</b></td>
-    <td align="left" id="dialog_job_vcpus"></td>
+    <td align="left" data-bind="text: container.vcpus"></td>
   </tr>
   <tr>
     <td align="right"><b>Memory:</b></td>
-    <td align="left" id="dialog_job_memory"></td>
+    <td align="left" data-bind="text: container.memory"></td>
   </tr>
 
 </table>
@@ -560,15 +569,12 @@ header span { margin-left: 100px; }
       <th align="left">Value</th>
     </tr>
   </thead>
-  <tbody>
+  <tbody data-bind="foreach: container.environment">
+    <tr>
+      <td data-bind="text: $data['name']"></td>
+      <td class="breakMe" data-bind="text: $data['value']"></td>
+    </tr>
   </tbody>
-
-{#
-  <tr>
-    <td align="right"><b></b></td> ## key
-    <td align="left"></td> ## value
-  </tr>
-#}
 </table>
 
 
@@ -582,14 +588,12 @@ header span { margin-left: 100px; }
     </tr>
 
   </thead>
-  <tbody>
+  <tbody data-bind="foreach: {data: Object.keys(parameters)}">
+    <tr>
+      <td data-bind="text: $data"></td>
+      <td  class="breakMe" data-bind="text: $parent.parameters[$data]"></td>
+    </tr>
   </tbody>
-{#
-  <tr>
-    <td align="right"><b></b></td> ## key
-    <td align="left"></td> ## value
-  </tr>
-#}
 </table>
 
 <h2>uLimits</h2>
@@ -602,7 +606,12 @@ header span { margin-left: 100px; }
       <th>Hard limit</th>
   </thead>
 
-  <tbody>
+  <tbody data-bind="foreach: container.ulimits">
+      <tr>
+          <td data-bind="text: $data.name"></td>
+          <td data-bind="text: $data.softLimit"></td>
+          <td data-bind="text: $data.hardLimit"></td>
+      </tr>
 
   </tbody>
 </table>
@@ -617,8 +626,11 @@ header span { margin-left: 100px; }
       <th>Source path</th>
   </thead>
 
-  <tbody>
-
+  <tbody  data-bind="foreach: container.volumes">
+      <tr>
+          <td data-bind="text: $data.name"></td>
+          <td data-bind="text: $data.host.sourcePath"></td>
+      </tr>
   </tbody>
 </table>
 
@@ -634,15 +646,27 @@ header span { margin-left: 100px; }
       <th>Read only</th>
   </thead>
 
-  <tbody>
+  <tbody data-bind="foreach: container.mountPoints">
+      <tr>
+          <td data-bind="text: $data.containerPath"></td>
+          <td data-bind="text: $data.sourceVolume"></td>
+          <td data-bind="text: $data.readOnly"></td>
+      </tr>
 
   </tbody>
 </table>
 
 <h2>CloudWatch logs</h2>
 
-<p id="dialog_job_log_link"></p>
+<!-- ko if: isRunning -->
+    <p><a data-bind="attr: { href: logLink, target: '_blank'}">
+        View logs for the most recent attempt in the CloudWatch console
+    </a></p>
+<!-- /ko -->
 
+<!-- ko ifnot: isRunning -->
+    <p>Only visible when job is <B>RUNNING</B>.</p>
+<!-- /ko -->
 
       </div>
       <div class="modal-footer">

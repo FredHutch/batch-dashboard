@@ -346,6 +346,14 @@ $(document).ready(function() {
   });
 
   var jobTable = $("#job_table").DataTable({
+      dom: 'Bfrtip',
+      buttons: [
+          {
+              extend: 'copyHtml5',
+              title: null,
+              text: 'Copy to clipboard'
+          }
+      ],
      columns: [
        {
          data: 'jobQueue()'
@@ -562,8 +570,15 @@ $('#job_table').on( 'click', '.job_id', function (event) {
   job.attempts.map(function(x, i){
      job['attempts'][i]['startedAt'] = new Date(x['startedAt']);
      job['attempts'][i]['stoppedAt'] = new Date(x['stoppedAt']);
+     job['attempts'][i]['logLink'] = '/job_log?jobId=' + job['jobId'] + '&attempt=' + i;
   });
   job.jobQueue = job.jobQueue.split("/").pop();
+  job.isRunning = job.status == 'RUNNING';
+  job.notRunning = !job.isRunning;
+  var attempt = job['attempts'].length;
+  var jobId = job['jobId'];
+  job.logLink = '/job_log?jobId=' + jobId + '&attempt=' + attempt;
+  console.log('attempt = ' + attempt + ', jobId = ' + jobId + ', isRunning = ' + job.isRunning + ', notRunning = ' + job.notRunning);
   var viewModel = ko.mapping.fromJS(job);
   ko.applyBindings(viewModel, elementToBind);
 
