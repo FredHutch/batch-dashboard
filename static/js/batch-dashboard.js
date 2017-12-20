@@ -252,10 +252,14 @@ $(document).ready(function() {
         var html = "";
         var jobs = [];
         obj['dependsOn'].map(function(item){
-          jobs.push(item['jobId']);
+          var row = item['jobId'];
+          if (item.hasOwnProperty('type')) {
+            row += " (" + item['type'] + ")";
+          }
+          jobs.push(row);
         });
         html = jobs.join(", ");
-        $("dialog_job_dependson").html(html);
+        $("#dialog_job_dependson").html(html);
       }
 
       // attempts
@@ -327,13 +331,13 @@ $(document).ready(function() {
         $("#dialog_job_mountpoints").append(html);
       });
 
-      if (obj['status'] == 'RUNNING') {
+      if (obj['attempts'].length > 0) {
           //         html += "<td><a target='_blank' href='/job_log?jobId=" + obj['jobId'] +  "&attempt=" + index + "'>View logs</a></td>\n";
           var attempt = obj['attempts'].length;
           var jobId = obj['jobId'];
           $("#dialog_job_log_link").html("<a target='_blank' href='/job_log?jobId=" + jobId + "&attempt=" + attempt + "'>View logs for the most recent attempt in the CloudWatch console</a>");
       } else {
-          $("#dialog_job_log_link").html("Only visible when job is <B>RUNNING</B>.");
+          $("#dialog_job_log_link").html("Only visible if job has been in <B>RUNNING</B> state.");
       }
 
       $("#job_dialog").modal();
