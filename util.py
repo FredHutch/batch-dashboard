@@ -120,9 +120,21 @@ def describe_env(env_name):
     return BATCH.describe_compute_environments(computeEnvironments=[env_name])\
        ['computeEnvironments'][0]
 
-def describe_job(job_id):
+def describe_job(job_id, child_state=None):
     "get info for one job"
-    return BATCH.describe_jobs(jobs=[job_id])['jobs'][0]
+    job = BATCH.describe_jobs(jobs=[job_id])['jobs'][0]
+    if child_state:
+        state_filter = child_state
+    else:
+        state_filter = job['status']
+
+    if "arrayProperties" in job and "statusSummary" in job['arrayProperties']:
+        # this is an array job, add the children
+        children = do_paginated_batch_operation("list_jobs", "jobSummaryList",
+                                                dict(arrayJobId=job['jobId'],
+                                                     jobStatus=state_filter))
+        job['childrenForStatus'] = children
+    return job
 
 def describe_job_definition(jobdef_id):
     "get info for one revision of a job definition"
