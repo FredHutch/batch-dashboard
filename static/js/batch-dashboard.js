@@ -448,7 +448,7 @@ $(document).ready(function() {
           var jobId = obj['jobId'];
           $("#dialog_job_log_link").html("<a target='_blank' href='/job_log?jobId=" + jobId + "&attempt=" + attempt + "'>View logs for the most recent attempt in the CloudWatch console</a>");
       } else {
-          if (obj['arrayProperties'].hasOwnProperty('size')) {
+          if (obj.hasOwnProperty('arrayProperties') && obj['arrayProperties'].hasOwnProperty('size')) {
               $("#dialog_job_log_link").html("Select an individual child job and view its logs.");
           } else {
               $("#dialog_job_log_link").html("Only visible if job has been in <B>RUNNING</B> state.");
