@@ -481,7 +481,7 @@ containerProperties['mountPoints'].map(function(item){
         jobName = msg.job_name;
 
         // check if this job is already in the jobs table:
-        len = jobTable.row("#row_" + jobId).length
+        len = $("#row_" + jobId).length
         if (len == 1) { // job exists
           console.log("job already exists");
           currentState = getCurrentStatus(jobId);
