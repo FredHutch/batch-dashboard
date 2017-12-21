@@ -27,16 +27,16 @@
 
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <td align="right"><b>Queue name: </b></td>
-            <td align="left" id="dialog_queue_name"></td>
+            <th align="right"><b>Queue name: </b></th>
+            <th align="left" id="dialog_queue_name"></th>
           </tr>
           <tr>
-            <td align="right"><b>Queue state: </b></td>
-            <td align="left" id="dialog_queue_state"></td>
+            <th align="right"><b>Queue state: </b></th>
+            <th align="left" id="dialog_queue_state"></th>
           </tr>
           <tr>
-            <td align="right"><b>Priority: </b></td>
-            <td align="left" id="dialog_queue_priority"></td>
+            <th align="right"><b>Priority: </b></th>
+            <th align="left" id="dialog_queue_priority"></th>
           </tr>
         </table>
 
@@ -72,28 +72,28 @@
 
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <td align="right"><b>Compute environment name:</b></td>
-            <td align="left" id="dialog_env_name"></td>
+            <th align="right"><b>Compute environment name:</b></th>
+            <th align="left" id="dialog_env_name"></th>
           </tr>
           <tr>
-            <td align="right"><b>Compute environment ARN:</b></td>
-            <td align="left" id="dialog_env_arn"></td>
+            <th align="right"><b>Compute environment ARN:</b></th>
+            <th align="left" id="dialog_env_arn"></th>
           </tr>
           <tr>
-            <td align="right"><b>Type:</b></td>
-            <td align="left" id="dialog_env_type"></td>
+            <th align="right"><b>Type:</b></th>
+            <th align="left" id="dialog_env_type"></th>
           </tr>
           <tr>
-            <td align="right"><b>Status:</b></td>
-            <td align="left" id="dialog_env_status"></td>
+            <th align="right"><b>Status:</b></th>
+            <th align="left" id="dialog_env_status"></th>
           </tr>
           <tr>
-            <td align="right"><b>State:</b></td>
-            <td align="left" id="dialog_env_state"></td>
+            <th align="right"><b>State:</b></th>
+            <th align="left" id="dialog_env_state"></th>
           </tr>
           <tr>
-            <td align="right"><b>Service role:</b></td>
-            <td align="left" id="dialog_env_service_role"></td>
+            <th align="right"><b>Service role:</b></th>
+            <th align="left" id="dialog_env_service_role"></th>
           </tr>
         </table>
 
@@ -101,48 +101,48 @@
 
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <td align="right"><b>Minimum vCPUs:</b></td>
-            <td align="left" id="dialog_env_minvcpus"></td>
+            <th align="right"><b>Minimum vCPUs:</b></th>
+            <th align="left" id="dialog_env_minvcpus"></th>
           </tr>
           <tr>
-            <td align="right"><b>Desired vCPUs:</b></td>
-            <td align="left" id="dialog_env_desiredvcpus"></td>
+            <th align="right"><b>Desired vCPUs:</b></th>
+            <th align="left" id="dialog_env_desiredvcpus"></th>
           </tr>
           <tr>
-            <td align="right"><b>Maximum vCPUs:</b></td>
-            <td align="left" id="dialog_env_maxvcpus"></td>
+            <th align="right"><b>Maximum vCPUs:</b></th>
+            <th align="left" id="dialog_env_maxvcpus"></th>
           </tr>
           <tr>
-            <td align="right"><b>Instance types:</b></td>
-            <td align="left" id="dialog_env_instance_types"></td>
+            <th align="right"><b>Instance types:</b></th>
+            <th align="left" id="dialog_env_instance_types"></th>
           </tr>
           <tr>
-            <td align="right"><b>Instance role:</b></td>
-            <td align="left" id="dialog_env_instancerole"></td>
+            <th align="right"><b>Instance role:</b></th>
+            <th align="left" id="dialog_env_instancerole"></th>
           </tr>
           <tr>
-            <td align="right"><b>Spot fleet role:</b></td>
-            <td align="left" id="dialog_env_spotfleetrole"></td>
+            <th align="right"><b>Spot fleet role:</b></th>
+            <th align="left" id="dialog_env_spotfleetrole"></th>
           </tr>
           <tr>
-            <td align="right"><b>EC2 Keypair:</b></td>
-            <td align="left" id="dialog_env_keypair"></td>
+            <th align="right"><b>EC2 Keypair:</b></th>
+            <th align="left" id="dialog_env_keypair"></th>
           </tr>
           <tr>
-            <td align="right"><b>AMI id:</b></td>
-            <td align="left" id="dialog_env_amiid"></td>
+            <th align="right"><b>AMI id:</b></th>
+            <th align="left" id="dialog_env_amiid"></th>
           </tr>
           <tr>
-            <td align="right"><b>vpcId:</b></td>
-            <td align="left" id="dialog_env_vpcid"></td>
+            <th align="right"><b>vpcId:</b></th>
+            <th align="left" id="dialog_env_vpcid"></th>
           </tr>
           <tr>
-            <td align="right"><b>Subnets:</b></td>
-            <td align="left" id="dialog_env_subnets"></td>
+            <th align="right"><b>Subnets:</b></th>
+            <th align="left" id="dialog_env_subnets"></th>
           </tr>
           <tr>
-            <td align="right"><b>Security Groups:</b></td>
-            <td align="left" id="dialog_env_securitygroups"></td>
+            <th align="right"><b>Security Groups:</b></th>
+            <th align="left" id="dialog_env_securitygroups"></th>
           </tr>
 
         </table>
@@ -168,7 +168,6 @@
   </div>
 </div>
 
-
 {# job modal #}
 <div class="modal fade" id="job_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
   <div class="modal-dialog" role="document">
@@ -179,24 +178,32 @@
         <h4 class="modal-title" id="dialog_env_header">Job details</h4>
       </div>
       <div class="modal-body">
-        <h3>Job Status</h3>
+
+        <div id="displaying_child_job" style="display: none;">
+            <p style="color: red; font-size: 200%;">
+                Displaying Child Job information
+            </p>
+            <button id="return_to_parent_job">Return to Parent Job</button>
+        </div>
+
+        <h2>Job Status</h2>
 
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <td align="right"><b>Status:</b></td>
-            <td align="left" id="dialog_job_status"></td>
+            <th align="right"><b>Status:</b></th>
+            <th align="left" id="dialog_job_status"></th>
           </tr>
           <tr>
-            <td align="right"><b>Created at:</b></td>
-            <td align="left" id="dialog_job_createdat"></td>
+            <th align="right"><b>Created at:</b></th>
+            <th align="left" id="dialog_job_createdat"></th>
           </tr>
           <tr>
-            <td align="right"><b>Started at:</b></td>
-            <td align="left" id="dialog_job_startedat"></td>
+            <th align="right"><b>Started at:</b></th>
+            <th align="left" id="dialog_job_startedat"></th>
           </tr>
           <tr>
-            <td align="right"><b>Queue:</b></td>
-            <td align="left" id="dialog_job_queue"></td>
+            <th align="right"><b>Queue:</b></th>
+            <th align="left" id="dialog_job_queue"></th>
           </tr>
         </table>
 
@@ -204,23 +211,62 @@
 
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <td align="right"><b>Job id:</b></td>
-            <td align="left" id="dialog_job_id"></td>
+            <th align="right"><b>Job id:</b></th>
+            <th align="left" id="dialog_job_id"></th>
           </tr>
           <tr>
-            <td align="right"><b>Job name:</b></td>
-            <td align="left" id="dialog_job_name"></td>
+            <th align="right"><b>Job name:</b></th>
+            <th align="left" id="dialog_job_name"></th>
           </tr>
           <tr>
-            <td align="right"><b>Job Definition:</b></td>
-            <td align="left" id="dialog_job_jobdef"></td>
+            <th align="right"><b>Job Definition:</b></th>
+            <th align="left" id="dialog_job_jobdef"></th>
           </tr>
           <tr>
-            <td align="right"><b>Depends on:</b></td>
-            <td align="left" id="dialog_job_dependson"></td>
+            <th align="right"><b>Depends on:</b></th>
+            <th align="left" id="dialog_job_dependson"></th>
           </tr>
 
         </table>
+
+<div id="array_job_details" style="display: none;">
+    <h2>Array Job</h2>
+
+    <table id="array_job_status_table">
+        <tr>
+            <th>submitted</th>
+            <th>pending</th>
+            <th>runnable</th>
+            <th>starting</th>
+            <th>running</th>
+            <th>failed</th>
+            <th>succeeded</th>
+        </tr>
+        <tr>
+            <td class="child_count" id="child_submitted_count"></td>
+            <td class="child_count" id="child_pending_count"></td>
+            <td class="child_count" id="child_runnable_count"></td>
+            <td class="child_count" id="child_starting_count"></td>
+            <td class="child_count" id="child_running_count"></td>
+            <td class="child_count"id="child_failed_count"></td>
+            <td class="child_count" id="child_succeeded_count"></td>
+
+        </tr>
+    </table>
+
+    <p>&nbsp;</p>
+
+    <table id="array_job_child_table">
+        <tr id="array_job_child_table_header">
+            <th>Job ID</th>
+            <th>Job Name</th>
+            <th>Status</th>
+            <th>Created At</th>
+        </tr>
+        <tr id="job_child_status">
+        </tr>
+    </table>
+</div>
 
 
 <h2>Attempts</h2>
@@ -243,12 +289,12 @@
 
 <table border="0" class="paddingBetweenCols">
   <tr>
-    <td align="right"><b>Job role:</b></td>
-    <td align="left" id="dialog_job_role"></td>
+    <th align="right"><b>Job role:</b></th>
+    <th align="left" id="dialog_job_role"></th>
   </tr>
   <tr>
-    <td align="right"><b>Container image:</b></td>
-    <td align="left" id="dialog_job_containerimage"></td>
+    <th align="right"><b>Container image:</b></th>
+    <th align="left" id="dialog_job_containerimage"></th>
   </tr>
 </table>
 
@@ -258,16 +304,16 @@
 
 <table border="0" class="paddingBetweenCols">
   <tr>
-    <td align="right"><b>Command:</b></td>
-    <td align="left" class="breakMe" id="dialog_job_command"></td>
+    <th align="right"><b>Command:</b></th>
+    <th align="left" class="breakMe" id="dialog_job_command"></th>
   </tr>
   <tr>
-    <td align="right"><b>vCPUs:</b></td>
-    <td align="left" id="dialog_job_vcpus"></td>
+    <th align="right"><b>vCPUs:</b></th>
+    <th align="left" id="dialog_job_vcpus"></th>
   </tr>
   <tr>
-    <td align="right"><b>Memory:</b></td>
-    <td align="left" id="dialog_job_memory"></td>
+    <th align="right"><b>Memory:</b></th>
+    <th align="left" id="dialog_job_memory"></th>
   </tr>
 
 </table>
@@ -286,8 +332,8 @@
 
 {#
   <tr>
-    <td align="right"><b></b></td> ## key
-    <td align="left"></td> ## value
+    <th align="right"><b></b></th> ## key
+    <th align="left"></th> ## value
   </tr>
 #}
 </table>
@@ -307,8 +353,8 @@
   </tbody>
 {#
   <tr>
-    <td align="right"><b></b></td> ## key
-    <td align="left"></td> ## value
+    <th align="right"><b></b></th> ## key
+    <th align="left"></th> ## value
   </tr>
 #}
 </table>
@@ -387,16 +433,16 @@
 
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <td align="right"><b>Job defninition name : revision: </b></td>
-            <td align="left" id="dialog_jobdef_namerevision"></td>
+            <th align="right"><b>Job defninition name : revision: </b></th>
+            <th align="left" id="dialog_jobdef_namerevision"></th>
           </tr>
           <tr>
-            <td align="right"><b>Job definition ARN: </b></td>
-            <td align="left" id="dialog_jobdef_arn"></td>
+            <th align="right"><b>Job definition ARN: </b></th>
+            <th align="left" id="dialog_jobdef_arn"></th>
           </tr>
           <tr>
-            <td align="right"><b>Status: </b></td>
-            <td align="left" id="dialog_jobdef_status"></td>
+            <th align="right"><b>Status: </b></th>
+            <th align="left" id="dialog_jobdef_status"></th>
           </tr>
         </table>
 
@@ -404,12 +450,12 @@
 
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <td align="right"><b>Job role ARN: </b></td>
-            <td align="left" id="dialog_jobdef_jobrolearn"></td>
+            <th align="right"><b>Job role ARN: </b></th>
+            <th align="left" id="dialog_jobdef_jobrolearn"></th>
           </tr>
           <tr>
-            <td align="right"><b>Image: </b></td>
-            <td align="left" id="dialog_jobdef_image"></td>
+            <th align="right"><b>Image: </b></th>
+            <th align="left" id="dialog_jobdef_image"></th>
           </tr>
         </table>
 
@@ -417,16 +463,16 @@
 
 <table border="0" class="paddingBetweenCols">
   <tr>
-    <td align="right"><b>Command: </b></td>
-    <td class="breakMe" align="left" id="dialog_jobdef_command"></td>
+    <th align="right"><b>Command: </b></th>
+    <th class="breakMe" align="left" id="dialog_jobdef_command"></th>
   </tr>
   <tr>
-    <td align="right"><b>vCPUs: </b></td>
-    <td align="left" id="dialog_jobdef_vcpus"></td>
+    <th align="right"><b>vCPUs: </b></th>
+    <th align="left" id="dialog_jobdef_vcpus"></th>
   </tr>
   <tr>
-    <td align="right"><b>Memory (MB): </b></td>
-    <td align="left" id="dialog_jobdef_memory"></td>
+    <th align="right"><b>Memory (MB): </b></th>
+    <th align="left" id="dialog_jobdef_memory"></th>
   </tr>
 </table>
 
@@ -434,8 +480,8 @@
 
 <table border="0" class="paddingBetweenCols">
   <tr>
-    <td align="right"><b>Attempts: </b></td>
-    <td align="left" id="dialog_jobdef_attempts"></td>
+    <th align="right"><b>Attempts: </b></th>
+    <th align="left" id="dialog_jobdef_attempts"></th>
   </tr>
 </table>
 
@@ -453,8 +499,8 @@
   </tbody>
 {#
   <tr>
-    <td align="right"><b></b></td> ## key
-    <td align="left"></td> ## value
+    <th align="right"><b></b></th> ## key
+    <th align="left"></th> ## value
   </tr>
 #}
 </table>
@@ -473,8 +519,8 @@
   </tbody>
 {#
   <tr>
-    <td align="right"><b></b></td> ## key
-    <td align="left"></td> ## value
+    <th align="right"><b></b></th> ## key
+    <th align="left"></th> ## value
   </tr>
 #}
 </table>
@@ -579,7 +625,7 @@
     {% for row in queue_summary_table %}
       <tr class="queue_row">
         {% for item in row %}
-          <td>
+          <th>
             {% if loop.index == 1 %}
               <a id="{{item}}" class="queue">
             {% endif %}
@@ -587,7 +633,7 @@
             {% if loop.index == 1 %}
               </a>
             {% endif %}
-          </td>
+          </th>
         {% endfor %}
       </tr>
     {% endfor %}
@@ -611,7 +657,7 @@
     {% for row in env_table %}
       <tr class="env_row">
         {% for item in row %}
-          <td>
+          <th>
             {% if loop.index == 1 %}
               <a id="{{item}}" class="compute_environment">
             {% endif %}
@@ -619,7 +665,7 @@
             {% if loop.index == 1 %}
               </a>
             {% endif %}
-          </td>
+          </th>
         {% endfor %}
       </tr>
     {% endfor %}
@@ -663,7 +709,7 @@
     {% for row in job_table %}
       <tr class="job_row" id="row_{{row[1]}}">
         {% for item in row %}
-          <td>
+          <th>
             {% if loop.index == 2 %}
               <a id="{{item}}" class="job_id">
             {% endif %}
@@ -671,7 +717,7 @@
             {% if loop.index == 2 %}
               </a>
             {% endif %}
-          </td>
+          </th>
         {% endfor %}
       </tr>
     {% endfor %}
@@ -717,13 +763,13 @@
     {% for row in job_def_table %}
       <tr>
         {% for item in row %}
-          <td>
+          <th>
             {% if loop.index == 1 %}
               <a class="jobdef" id="{{row[0]}}:{{row[1]}}">{{row[0]}}</a>
             {% else %}
               {{item}}
             {% endif %}
-          </td>
+          </th>
         {% endfor %}
       </tr>
     {% endfor %}

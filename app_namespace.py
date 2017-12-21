@@ -117,7 +117,8 @@ def describe_env():
 @app.route("/describe_job", methods=["GET"])
 def describe_job():
     job_id = request.args.get('job_id')
-    ret = util.describe_job(job_id)
+    child_state = request.args.get('child_state')
+    ret = util.describe_job(job_id, child_state)
     return jsonify(ret)
 
 

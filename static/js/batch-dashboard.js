@@ -104,6 +104,64 @@ $(document).ready(function() {
      } );
  } );
 
+    // various click handlers
+
+    // click on one of the statuses of a parent array job
+    $("#array_job_status_table").on('click', ".child_status", function(event) {
+        var id = $(event.target).attr('id');
+        var segs = id.split("_");
+        var jobId = segs[0];
+        var status = segs[1];
+        var td = "#" + "child_" + status.toLowerCase() + "_count";
+        $(".child_count").css("border", "0");
+        $(td).css("border", "1px solid black");
+
+        $.getJSON( "/describe_job", { job_id: jobId, child_state: status} )
+          .done(function( obj ) {
+            updateChildInfo(obj);
+          })
+          .fail(function( jqxhr, textStatus, error ) {
+            var err = textStatus + ", " + error;
+            console.log( "Request Failed: " + err );
+          });
+    });
+
+    // click on a child job
+    $("#array_job_child_table").on('click', ".describe_child_job", function(event){
+        var id = $(event.target).attr('id');
+
+        $.getJSON( "/describe_job", { job_id: id } )
+          .done(function( obj ) {
+            clearTables();
+            populateJobDialog(obj);
+            $('#job_dialog').show().scrollTop(0);
+          })
+          .fail(function( jqxhr, textStatus, error ) {
+            var err = textStatus + ", " + error;
+            console.log( "Request Failed: " + err );
+          });
+
+    });
+
+    // return to parent job
+    $("#displaying_child_job").on('click', "#return_to_parent_job", function(event){
+        var id = $("#dialog_job_id").html();
+        var segs = id.split(":");
+        var jobId = segs[0];
+
+        $.getJSON( "/describe_job", { job_id: jobId } )
+          .done(function( obj ) {
+            clearTables();
+            populateJobDialog(obj);
+            $('#job_dialog').show().scrollTop(0);
+          })
+          .fail(function( jqxhr, textStatus, error ) {
+            var err = textStatus + ", " + error;
+            console.log( "Request Failed: " + err );
+          });
+    });
+
+
 
     // click event handler for tables
 
@@ -235,8 +293,62 @@ $(document).ready(function() {
 
     }
 
+    var updateChildInfo = function(obj) {
+        var summary = obj['arrayProperties']['statusSummary'];
+        states.map(function(state){
+           var selector = "#child_" + state.toLowerCase() + "_count";
+           var htmlStr = '<a class="child_status" id="'+obj['jobId']+'_'+state+'">';
+           htmlStr += summary[state] + "</a>"
+           $(selector).html(htmlStr);
+        });
+        //array_job_child_table
+        $("#array_job_child_table").find("tr:gt(0)").remove();
+        obj['childrenForStatus'].map(function(child){
+            var row = document.createElement("tr");
+            var jobTd = document.createElement("td");
+            var jobA = document.createElement("a");
+            jobA.setAttribute("class", "describe_child_job");
+            jobA.setAttribute("id", child['jobId']);
+            var jobIdText = document.createTextNode(child['jobId']);
+            jobA.appendChild(jobIdText)
+            jobTd.appendChild(jobA);
+            row.appendChild(jobTd);
+            var jobNameTd = document.createElement("td");
+            var jobNameText = document.createTextNode(child['jobName']);
+            jobNameTd.appendChild(jobNameText);
+            row.appendChild(jobNameTd);
+            var jobStatusTd = document.createElement("td");
+            var jobStatusText = document.createTextNode(child['status']);
+            jobStatusTd.appendChild(jobStatusText);
+            row.appendChild(jobStatusTd);
+            var createdAtTd = document.createElement("td");
+            var createdAtText = document.createTextNode(new Date(child['createdAt']));
+            createdAtTd.appendChild(createdAtText);
+            row.appendChild(createdAtTd);
+            $("#array_job_child_table").append(row);
+        });
+    }
+
     var populateJobDialog = function(obj) {
       // job status
+      $("#array_job_details").hide();
+      $("#displaying_child_job").hide();
+      if (obj.hasOwnProperty('arrayProperties')) {
+          if (obj['arrayProperties'].hasOwnProperty('size')) {
+              // this is an array parent job
+
+              var td = "#" + "child_" + obj['status'].toLowerCase() + "_count";
+              $(".child_count").css("border", "0");
+              $(td).css("border", "1px solid black");
+
+              $("#array_job_details").show();
+              updateChildInfo(obj);
+          } else if (obj['arrayProperties'].hasOwnProperty('index')) {
+              // this is an array child job
+              $("#displaying_child_job").show();
+
+          }
+      }
       $("#dialog_job_status").html(obj['status']);
       $("#dialog_job_createdat").html(new Date(obj['createdAt']));
       if (obj.hasOwnProperty('startedAt')) {
@@ -331,13 +443,17 @@ $(document).ready(function() {
         $("#dialog_job_mountpoints").append(html);
       });
 
-      if (obj['attempts'].length > 0) {
-          //         html += "<td><a target='_blank' href='/job_log?jobId=" + obj['jobId'] +  "&attempt=" + index + "'>View logs</a></td>\n";
-          var attempt = obj['attempts'].length;
+      if (obj['container'].hasOwnProperty('logStreamName')) {
+          var attempt = obj['attempts'].length -1;
           var jobId = obj['jobId'];
           $("#dialog_job_log_link").html("<a target='_blank' href='/job_log?jobId=" + jobId + "&attempt=" + attempt + "'>View logs for the most recent attempt in the CloudWatch console</a>");
       } else {
-          $("#dialog_job_log_link").html("Only visible if job has been in <B>RUNNING</B> state.");
+          if (obj['arrayProperties'].hasOwnProperty('size')) {
+              $("#dialog_job_log_link").html("Select an individual child job and view its logs.");
+          } else {
+              $("#dialog_job_log_link").html("Only visible if job has been in <B>RUNNING</B> state.");
+          }
+
       }
 
       $("#job_dialog").modal();
