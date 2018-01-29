@@ -18,7 +18,7 @@ ENV AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
 
 RUN apt-get update -y
 
-RUN apt-get install -y locales git vim software-properties-common python-software-properties curl
+RUN apt-get update -y && apt-get install -y locales git vim software-properties-common python-software-properties curl
 
 RUN add-apt-repository -y ppa:jonathonf/python-3.6
 RUN apt-get update -y
