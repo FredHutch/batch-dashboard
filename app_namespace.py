@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from threading import Lock
-from distutils.util import strtobool
+# see https://github.com/PyCQA/pylint/issues/73
+from distutils.util import strtobool # pylint: disable=import-error, no-name-in-module
 import json
 import os
 import sys
@@ -9,6 +10,9 @@ import boto3
 from flask import Flask, render_template, session, request, jsonify
 from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, \
     close_room, rooms, disconnect
+from flask_restful import Resource, Api
+from flask_httpauth import HTTPBasicAuth
+import requests
 
 import util
 
@@ -18,6 +22,7 @@ import util
 async_mode = None
 
 app = Flask(__name__, static_url_path='')
+api = Api(app)
 
 required_env_vars = ['QUEUE_URL', 'APP_SECRET']
 notset = False
@@ -212,6 +217,31 @@ class MyNamespace(Namespace):
 
 
 socketio.on_namespace(MyNamespace('/test'))
+
+
+# REST functionality
+
+AUTH = HTTPBasicAuth()
+
+
+@AUTH.verify_password
+def verify_password(username, password):
+    "Call toolbox to see if our AWS credentials are valid"
+    res = requests.get("https://toolbox.fhcrc.org/sw2srv/aws/get_hutchnet_id",
+                       auth=requests.auth.HTTPBasicAuth(username, password))
+    if res.status_code == 200:
+        return True
+    return False
+
+class SubmitJob(Resource):
+    "REST resource for submitting batch jobs"
+    @AUTH.login_required
+    def post(self): # pylint: disable=no-self-use
+        """Submit a job"""
+        return {'hello': 'world'}
+
+api.add_resource(SubmitJob, '/submit_job')
+
 
 
 if __name__ == '__main__':

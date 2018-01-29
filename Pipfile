@@ -22,6 +22,9 @@ flask-socketio = "*"
 gunicorn = "*"
 gevent = "*"
 eventlet = "*"
+flask-restful = "*"
+flask-httpauth = "*"
+requests = "*"
 
 
 [dev-packages]
