@@ -15,6 +15,7 @@ from flask_httpauth import HTTPBasicAuth
 import requests
 
 import util
+import submit_proxy
 
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
@@ -238,7 +239,12 @@ class SubmitJob(Resource):
     @AUTH.login_required
     def post(self): # pylint: disable=no-self-use
         """Submit a job"""
-        return {'hello': 'world'}
+        try:
+            obj = request.get_json()
+            result = submit_proxy.submit_job(AUTH.username(), **obj)
+            return result, 200
+        except Exception as exc: # pylint: disable=broad-except
+            return dict(error=str(exc)), 400
 
 api.add_resource(SubmitJob, '/submit_job')
 
