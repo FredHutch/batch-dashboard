@@ -88,10 +88,10 @@ def submit_job(user, **kwargs):
     """
     # TODO is there anything else we want to inject here?
     namedict = dict(name="AWS_BATCH_JOB_SUBMITTED_BY", value=user)
-    if ('containerOverrides' not in kwargs) or ('environment' not in kwargs['containerOverrides']):
-        kwargs['containerOverrides'] = \
-          dict(environment=[namedict])
-    else:
-        kwargs['containerOverrides']['environment'].append(namedict)
+    if 'containerOverrides' not in kwargs:
+        kwargs['containerOverrides'] = {}
+    if 'environment' not in kwargs['containerOverrides']:
+        kwargs['containerOverrides']['environment'] = []
+    kwargs['containerOverrides']['environment'].append(namedict)
     batch = boto3.client("batch")
     return batch.submit_job(**kwargs)
