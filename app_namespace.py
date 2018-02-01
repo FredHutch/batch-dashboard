@@ -13,6 +13,7 @@ from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, \
 from flask_restful import Resource, Api
 from flask_httpauth import HTTPBasicAuth
 import requests
+# import traceback
 
 import util
 import submit_proxy
@@ -234,6 +235,18 @@ def verify_password(username, password):
         return True
     return False
 
+def get_exception_class(exc):
+    """
+    get the full path of the exception class as a string
+    exc.__class__.__name__ trims off the path info
+    """
+
+    exc_str = str(exc.__class__)
+    return exc_str.replace("<class '", "").replace("'>", "")
+
+
+
+
 class SubmitJob(Resource):
     "REST resource for submitting batch jobs"
     @AUTH.login_required
@@ -241,12 +254,49 @@ class SubmitJob(Resource):
         """Submit a job"""
         try:
             obj = request.get_json()
-            result = submit_proxy.submit_job(AUTH.username(), **obj)
+            user = submit_proxy.get_user(request.authorization.username,
+                                         request.authorization.password).split("/")[-1]
+            result = submit_proxy.submit_job(user, **obj)
             return result, 200
         except Exception as exc: # pylint: disable=broad-except
-            return dict(error=str(exc)), 400
+            return dict(error=str(exc), exception=get_exception_class(exc)), 400
+
+
+class TerminateJob(Resource):
+    "REST resource for terminating a batch job"
+    @AUTH.login_required
+    def post(self): # pylint: disable=no-self-use
+        """Submit a job"""
+        try:
+            obj = request.get_json()
+            user = submit_proxy.get_user(request.authorization.username,
+                                         request.authorization.password).split("/")[-1]
+            result = submit_proxy.terminate_job(user, **obj)
+            return result, 200
+        except Exception as exc: # pylint: disable=broad-except
+            # print(exc)
+            # traceback.print_exc()
+            return dict(error=str(exc), exception=get_exception_class(exc)), 400
+
+
+class CancelJob(Resource):
+    "REST resource for canceling a batch job"
+    @AUTH.login_required
+    def post(self): # pylint: disable=no-self-use
+        """Submit a job"""
+        try:
+            obj = request.get_json()
+            user = submit_proxy.get_user(request.authorization.username,
+                                         request.authorization.password).split("/")[-1]
+            result = submit_proxy.cancel_job(user, **obj)
+            return result, 200
+        except Exception as exc: # pylint: disable=broad-except
+            return dict(error=str(exc), exception=get_exception_class(exc)), 400
+
 
 api.add_resource(SubmitJob, '/submit_job')
+api.add_resource(TerminateJob, '/terminate_job')
+api.add_resource(CancelJob, '/cancel_job')
 
 
 

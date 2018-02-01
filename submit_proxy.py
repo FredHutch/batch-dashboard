@@ -15,6 +15,9 @@ class MultipleJobDefinitionsException(Exception):
     "Error to throw if jobdef string matches multiple job definitions"
     pass
 
+class PermissionDeniedException(Exception):
+    "Error to throw if user does not have permission to submit this job"
+    pass
 
 def can_submit(user, jobdef):
     """Decide whether user can submit this job.
@@ -86,6 +89,12 @@ def submit_job(user, **kwargs):
     Raises:
         Whatever boto3.batch.submit_job raises.
     """
+
+    if 'jobDefinition' not in kwargs:
+        raise ValueError("no jobDefinition set")
+    if not can_submit(user, kwargs['jobDefinition']):
+        msg = "You don't have permission to run a job with this task role"
+        raise PermissionDeniedException(msg)
     # TODO is there anything else we want to inject here?
     namedict = dict(name="AWS_BATCH_JOB_SUBMITTED_BY", value=user)
     if 'containerOverrides' not in kwargs:
@@ -95,3 +104,67 @@ def submit_job(user, **kwargs):
     kwargs['containerOverrides']['environment'].append(namedict)
     batch = boto3.client("batch")
     return batch.submit_job(**kwargs)
+
+def check_job_ownership(user, **kwargs):
+    """
+    Determine if user is allowed to cancel or terminate job.
+    This does not REALLY check to see if the user started the job.
+    It just checks to see if the job has an environment variable called
+    AWS_BATCH_JOB_SUBMITTED_BY whose value matches the username.
+    So someone could subvert this security by creating a job that someone
+    else could terminate, but why bother?
+    In future, do we want coarser-grained access? Like, if Alice started a job,
+    allowing anyone from her group to terminate it?
+
+    This function does not return a boolean. If you don't have permission
+    to terminate/cancel the job, it will raise an exception.
+    """
+    if 'jobId' not in kwargs:
+        raise ValueError('no jobId set')
+    batch = boto3.client("batch")
+    job_desc = batch.describe_jobs(jobs=[kwargs['jobId']])
+    if not job_desc['jobs']:
+        raise ValueError('no job with that ID')
+    job = job_desc['jobs'][0]
+    if 'environment' not in job['container']:
+        raise PermissionDeniedException("You didn't start this job.")
+    varlist = job['container']['environment']
+    env = {}
+    for item in varlist:
+        env[item['name']] = item['value']
+    if ('AWS_BATCH_JOB_SUBMITTED_BY' not in env) or (env['AWS_BATCH_JOB_SUBMITTED_BY'] != user):
+        raise PermissionDeniedException("You didn't start this job")
+
+
+def terminate_job(user, **kwargs):
+    """A proxy for the terminate_job call on boto3's batch client.
+    Args:
+    user -- The username we are submitting on behalf of. We check to make
+            sure that this user is authorized to terminate the job they
+            are trying to terminate.
+    kwargs -- Arguments passed through to boto3.batch.terminate_job()
+    Returns:
+        Whatever boto3.batch.terminate_job returns.
+    Raises:
+        Whatever boto3.batch.terminate_job raises.
+    """
+    check_job_ownership(user, **kwargs)
+    batch = boto3.client("batch")
+    return batch.terminate_job(**kwargs)
+
+
+def cancel_job(user, **kwargs):
+    """A proxy for the cancel_job call on boto3's batch client.
+    Args:
+    user -- The username we are submitting on behalf of. We check to make
+            sure that this user is authorized to cancel the job they
+            are trying to cancel.
+    kwargs -- Arguments passed through to boto3.batch.cancel_job()
+    Returns:
+        Whatever boto3.batch.cancel_job returns.
+    Raises:
+        Whatever boto3.batch.cancel_job raises.
+    """
+    check_job_ownership(user, **kwargs)
+    batch = boto3.client("batch")
+    return batch.cancel_job(**kwargs)
