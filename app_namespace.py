@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from threading import Lock
+import socket
 # see https://github.com/PyCQA/pylint/issues/73
 from distutils.util import strtobool # pylint: disable=import-error, no-name-in-module
 import json
@@ -226,14 +227,33 @@ socketio.on_namespace(MyNamespace('/test'))
 AUTH = HTTPBasicAuth()
 
 
+def is_inside_hutch_network():
+    """
+    Determine if we are inside the hutch network.
+    This app should NOT be put into production outside the hutch network,
+    this function just exists so that development can happen outside the network.
+    """
+    return socket.gethostbyname(socket.gethostname()).startswith("140.107")
+
 @AUTH.verify_password
 def verify_password(username, password):
     "Call toolbox to see if our AWS credentials are valid"
-    res = requests.get("https://toolbox.fhcrc.org/sw2srv/aws/get_hutchnet_id",
-                       auth=requests.auth.HTTPBasicAuth(username, password))
-    if res.status_code == 200:
-        return True
-    return False
+    if is_inside_hutch_network():
+        res = requests.get("https://toolbox.fhcrc.org/sw2srv/aws/get_hutchnet_id",
+                           auth=requests.auth.HTTPBasicAuth(username, password))
+        if res.status_code == 200:
+            return True
+        return False
+    else:
+        # NOTE! App should NOT be put into production outside the hutch network.
+        # That's because the check below is not thorough enough, it only checks
+        # for a valid AWS account, not whether the account is one of 'ours'.
+        sts = boto3.client("sts")
+        try:
+            sts.get_caller_identity()
+            return True
+        except: # pylint: disable=bare-except
+            return False
 
 def get_exception_class(exc):
     """
