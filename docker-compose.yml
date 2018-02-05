@@ -9,7 +9,7 @@ services:
     # - BATCH_DASHBOARD_QUEUE_URL
     # - BATCH_DASHBOARD_SECRET_KEY
     ports:
-      - "8000"
+      - "8001"
     labels:
       io.rancher.container.pull_image: always
 # secrets:

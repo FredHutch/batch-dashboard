@@ -40,7 +40,7 @@ RUN pip3 install pipenv
 RUN pipenv install
 
 
-EXPOSE 8000
+EXPOSE 8001
 
 
 
