@@ -2,13 +2,11 @@
 """
 batch dashboard web application.
 """
-import socket
 # see https://github.com/PyCQA/pylint/issues/73
 from distutils.util import strtobool # pylint: disable=import-error, no-name-in-module
 import os
 import sys
 import datetime
-import boto3
 from flask import Flask, render_template, request, jsonify
 from flask_restful import Resource, Api
 from flask_httpauth import HTTPBasicAuth
@@ -35,22 +33,36 @@ APP.config['SECRET_KEY'] = os.getenv('APP_SECRET')
 @APP.route('/')
 def index():
     "main route"
-    info = util.get_all_job_info()
-    queue_table_data = util.get_queue_summary(info)
-    queue_names = sorted([x['queue_name'] for x in info], key=lambda s: s.lower())
-    envs = util.get_compute_environment_table()
-    jobs = util.get_job_table(info)
-    jobdefs = util.get_job_definition_table()
     timestamp = datetime.datetime.now().isoformat()
     return render_template('index.html',
-                           queue_summary_table=queue_table_data['data'],
-                           env_table=envs['data'],
-                           job_table=jobs['data'],
-                           job_def_table=jobdefs['data'],
                            timestamp=timestamp,
-                           states=util.STATES,
-                           queue_names=queue_names)
+                           states=util.STATES)
 
+# FIXME get_all_job_info gets called twice when page loads - can this be avoided?
+# (once in get_queue_table_data and once in get_job_table_data)
+
+@APP.route("/get_queue_table_data", methods=['GET'])
+def get_queue_table_data():
+    "route for populating queue table"
+    info = util.get_all_job_info()
+    queue_table_data = util.get_queue_summary(info)
+    return jsonify(queue_table_data)
+
+@APP.route("/get_env_table_data", methods=['GET'])
+def get_env_table_data():
+    "route for populating env table"
+    return jsonify(util.get_compute_environment_table())
+
+@APP.route("/get_job_table_data", methods=['GET'])
+def get_job_table_data():
+    "route for populating job table"
+    info = util.get_all_job_info()
+    return jsonify(util.get_job_table(info))
+
+@APP.route("/get_jobdef_table_data", methods=['GET'])
+def get_jobdef_table_data():
+    "route for populating job definition table"
+    return jsonify(util.get_job_definition_table())
 
 @APP.route('/describe_queue', methods=['GET'])
 def describe_queue():

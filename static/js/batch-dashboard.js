@@ -54,9 +54,42 @@ $(document).ready(function() {
 
 
     // tables
-    var queueTable = $('#queue_summary_table').DataTable();
-    var envTable = $('#comp_env_table').DataTable();
+    var queueTable = $('#queue_summary_table').DataTable(
+      {
+        "ajax": "/get_queue_table_data",
+        "columnDefs": [
+          {
+            "render": function(data, type, row) {
+              return '<a id="' + data + '" class="queue">' + data + '</a>';
+            },
+            targets: 0
+          }
+        ]
+      }
+    );
+    var envTable = $('#comp_env_table').DataTable(
+      {
+        "ajax": "/get_env_table_data",
+        "columnDefs": [
+          {
+            "render": function(data, type, row) {
+              return '<a id="' + data + '" class="compute_environment">' + data + '</a>';
+            },
+            targets: 0
+          }
+        ]
+      }
+    );
     var jobTable = $('#job_table').DataTable({
+        "ajax": "/get_job_table_data",
+        "columnDefs": [
+          {
+            "render": function(data, type, row) {
+              return '<a id="' + data + '" class="job_id">' + data + '</a>'
+            },
+            targets: 1
+          }
+        ],
         dom: 'Bfrtip',
         buttons: [
             {
@@ -66,7 +99,19 @@ $(document).ready(function() {
             }
         ]
     });
-    var jobDefTable = $("#job_def_table").DataTable();
+    var jobDefTable = $("#job_def_table").DataTable(
+      {
+        "ajax": "/get_jobdef_table_data",
+        "columnDefs": [
+          {
+            "render": function(data, type, row) {
+              return '<a class="jobdef" id="' + row[0] +  ':' + row[1] + '">' + data + '</a>'
+            },
+            targets: 0
+          }
+        ]
+      }
+    );
 
 
 /*
@@ -183,6 +228,33 @@ $(document).ready(function() {
         });
     }); // end of click event handler for queues
 
+    // click reload button for queues table
+    $('#reload_queue_table').on('click', function(event) {
+      queueTable.ajax.reload();
+    })
+
+    // click reload button for envs table
+    $('#reload_env_table').on('click', function(event) {
+      envTable.ajax.reload();
+    })
+
+
+    // click reload button for jobs table
+    $('#reload_job_table').on('click', function(event) {
+      jobTable.ajax.reload();
+    })
+
+
+    // listen for draw event on queue table so we can grab distinct queue names
+    $("#queue_summary_table").on('draw.dt', function(event) {
+      $("#queue_filter").empty();
+      $("#queue_filter").append("<option>No Filter</option>");
+      var data = queueTable.rows().data();
+      for (var i = 0; i < data.length; i++) {
+        $("#queue_filter").append("<option>" + data[i][0] + "</option>");
+      }
+
+    })
 
     // click event handler for compute environment table
     $('#comp_env_table').on( 'click', '.compute_environment', function (event) {

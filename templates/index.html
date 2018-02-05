@@ -607,7 +607,11 @@
 
 <h2 id="queues_header">Queues</h2>
 
-    <table id="queue_summary_table" class="display">
+    <div style="float: right; padding: 5px;">
+      <img id="reload_queue_table" src="/images/refresh.png" height="30" width="30" title="reload data"/>
+    </div>
+
+    <table id="queue_summary_table" class="display" style="float: none">
       <thead>
         <tr>
           <th>Name</th>
@@ -621,29 +625,17 @@
           <th>SUCCEEDED</th>
         </tr>
     </thead>
-    <tbody>
-    {% for row in queue_summary_table %}
-      <tr class="queue_row">
-        {% for item in row %}
-          <th>
-            {% if loop.index == 1 %}
-              <a id="{{item}}" class="queue">
-            {% endif %}
-            {{ item }}
-            {% if loop.index == 1 %}
-              </a>
-            {% endif %}
-          </th>
-        {% endfor %}
-      </tr>
-    {% endfor %}
-    </tbody>
     </table>
 
 
 <h2 id="compute_environments_header">Compute Environments</h2>
 
-<table id="comp_env_table" class="display">
+<div style="float: right; padding: 5px;">
+  <img id="reload_env_table" src="/images/refresh.png" height="30" width="30" title="reload data"/>
+</div>
+
+
+<table id="comp_env_table" class="display" style="float: none">
   <thead>
     <tr>
       <th>Name</th>
@@ -653,50 +645,18 @@
       <th>Maximum vCPUs</th>
     </tr>
   </thead>
-  <tbody>
-    {% for row in env_table %}
-      <tr class="env_row">
-        {% for item in row %}
-          <th>
-            {% if loop.index == 1 %}
-              <a id="{{item}}" class="compute_environment">
-            {% endif %}
-            {{ item }}
-            {% if loop.index == 1 %}
-              </a>
-            {% endif %}
-          </th>
-        {% endfor %}
-      </tr>
-    {% endfor %}
-  </tbody>
 </table>
 
 
 
 <h2 id="jobs_header">Jobs</h2>
 
-{#
-<p>
-    Filter by queue: <select id="queue_filter">
-        <option></option>
-        {% for qname in queue_names %}
-            <option>{{qname}}</option>
-        {% endfor %}
-    </select>
+<div style="float: right; padding: 5px;">
+  <img id="reload_job_table" src="/images/refresh.png" height="30" width="30" title="reload data"/>
+</div>
 
-    Filter by job state: <select id="state_filter">
-        <option></option>
-        {% for state in states %}
-            <option>{{state}}</option>
-        {% endfor %}
-    </select>
 
-    <button id="clear_filters">Clear Filters</button>
-</p>
-#}
-
-<table id="job_table" class="display">
+<table id="job_table" class="display" style="float: none">
   <thead>
     <tr>
       <th>Queue</th>
@@ -705,31 +665,11 @@
       <th>Status</th>
     </tr>
   </thead>
-  <tbody>
-    {% for row in job_table %}
-      <tr class="job_row" id="row_{{row[1]}}">
-        {% for item in row %}
-          <th>
-            {% if loop.index == 2 %}
-              <a id="{{item}}" class="job_id">
-            {% endif %}
-            {{ item }}
-            {% if loop.index == 2 %}
-              </a>
-            {% endif %}
-          </th>
-        {% endfor %}
-      </tr>
-    {% endfor %}
-  </tbody>
+
   <tfoot>
       <tr>
           <th>
               <select id="queue_filter">
-                  <option>No Filter</option>
-                  {% for qname in queue_names %}
-                      <option>{{qname}}</option>
-                  {% endfor %}
               </select>
           </th>
           <th></th>
@@ -748,8 +688,13 @@
 
 <h2 id="job_def_header">Job Definitions</h2>
 
+<div style="float: right; padding: 5px;">
+  <img id="reload_jobdef_table" src="/images/refresh.png" height="30" width="30" title="reload data"/>
+</div>
 
-<table id="job_def_table" class="display">
+
+
+<table id="job_def_table" class="display" style="float: none">
   <thead>
     <tr>
       <th>Name</th>
@@ -759,21 +704,6 @@
       <th>Image</th>
     </tr>
   </thead>
-  <tbody>
-    {% for row in job_def_table %}
-      <tr>
-        {% for item in row %}
-          <th>
-            {% if loop.index == 1 %}
-              <a class="jobdef" id="{{row[0]}}:{{row[1]}}">{{row[0]}}</a>
-            {% else %}
-              {{item}}
-            {% endif %}
-          </th>
-        {% endfor %}
-      </tr>
-    {% endfor %}
-  </tbody>
 </table>
 
 
