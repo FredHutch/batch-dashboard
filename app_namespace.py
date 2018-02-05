@@ -7,11 +7,12 @@ from distutils.util import strtobool # pylint: disable=import-error, no-name-in-
 import os
 import sys
 import datetime
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 from flask_restful import Resource, Api
 from flask_httpauth import HTTPBasicAuth
 import requests
 
+from ldap3_auth import authenticate
 import util
 import submit_proxy
 
@@ -123,6 +124,26 @@ def job_log():
                            start_from_head=start_from_head)
 
 
+
+# gui authentication
+
+@APP.route("/login", methods=["POST"])
+def login():
+    "gui login (hutchnet id/password)"
+    username = request.form['username']
+    password = request.form['password']
+    if authenticate(username, password):
+        session['username'] = username
+        return jsonify(username)
+    return jsonify(None)
+
+
+@APP.route("/logout")
+def logout():
+    """Log out."""
+    if 'username' in session:
+        del session['username']
+    return jsonify("ok")
 
 
 # REST functionality

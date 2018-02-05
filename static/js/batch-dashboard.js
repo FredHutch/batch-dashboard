@@ -7,6 +7,7 @@ $(document).ready(function() {
     showAlert({"job_name": "my job name", "job_status": "SUBMITTED"});
   });
 
+
     var showAlert = function(msg) {
       console.log("showing alert");
       $("#inner-message").html("Job " + msg.job_name + " has reached status " + msg.job_status + ".");
@@ -256,6 +257,19 @@ $(document).ready(function() {
 
     })
 
+    //focus username element when login dialog is shown
+    $('#loginModal').on('shown.bs.modal', function () {
+      $('#username').focus();
+    })
+
+    // allow the enter key to submit the login form:
+    $('#password').keypress(function (e) {
+      if (e.which == 13) {
+        doLogin();
+      }
+    });
+
+
     // click event handler for compute environment table
     $('#comp_env_table').on( 'click', '.compute_environment', function (event) {
       console.log("in click handler for compute environment");
@@ -403,6 +417,38 @@ $(document).ready(function() {
 
     var populateJobDialog = function(obj) {
       // job status
+      obj['createdAt'] = new Date(obj['createdAt']);
+      obj['jobQueue'] = obj['jobQueue'].split("/").pop();
+      obj['jobDefinition'] = obj['jobDefinition'].split("/").pop();
+
+      if (obj.hasOwnProperty('startedAt')) {
+        obj['startedAt'] = new Date(obj['startedAt']);
+      } else {
+        obj['startedAt'] = '';
+      }
+
+      obj['dependsOnComputed'] = function() {
+          if (obj.hasOwnProperty('dependsOn')) {
+              var html = "";
+              var jobs = [];
+              obj['dependsOn'].map(function(item){
+                var row = item['jobId'];
+                if (item.hasOwnProperty('type')) {
+                  row += " (" + item['type'] + ")";
+                }
+                jobs.push(row);
+              });
+              html = jobs.join(", ");
+              return html
+          } else {
+            return ""
+          }
+      }
+
+
+      model.job(obj);//dante
+
+
       $("#array_job_details").hide();
       $("#displaying_child_job").hide();
       if (obj.hasOwnProperty('arrayProperties')) {
@@ -472,7 +518,8 @@ $(document).ready(function() {
       obj['container']['environment'].map(function(item){
         var html = "<tr>\n";
         html += "<td align='right'><b>" + item['name'] +  "</b></td>\n";
-        html += "<td align='left' class='breakMe'>" + item['value'] +  "</td>\n";
+        var id = "ENV_" + item['name'];
+        html += "<td id='" + id + "' align='left' class='breakMe'>" + item['value'] +  "</td>\n";
         html += "</tr>\n"
         $("#dialog_job_envvars").append(html);
       });
@@ -615,4 +662,98 @@ containerProperties['mountPoints'].map(function(item){
 
 }
 
-});
+}); // end of ready function
+
+// begin knockout model code
+
+function DashboardViewModel() {
+  var self = this;
+
+  self.username = ko.observable("not logged in");
+  self.isLoggedIn = ko.observable(false);
+  self.job = ko.observable();
+
+  self.canTerminate = ko.computed(function() {
+      console.log("in canTerminate(), username is " + self.username() + " submitted by " + $("ENV_AWS_BATCH_JOB_SUBMITTED_BY").html());
+      if (!self.isLoggedIn()) return false;
+      try {
+        var envVars = self.job.container.environment;
+        for (var i = 0; i < envVars.length; i++) {
+          item = envVars[i];
+          if (item['name'] == ['AWS_BATCH_JOB_SUBMITTED_BY']) {
+            return item['value'] == self.username()
+          }
+        }
+        return false;
+      } catch (err) {
+        return false;
+      }
+  }, self);
+
+  self.canCancel = ko.computed(function() {
+    console.log("in canCancel()");
+    if (self.canTerminate()) return false;
+    //SUBMITTED , PENDING , or RUNNABLE
+    return ['SUBMITTED', 'PENDING', 'RUNNABLE'].includes($("#dialog_job_status").html())
+  }, self)
+
+  login = function() {
+    $("#loginModal").modal();
+    $("#username").focus();
+  }
+
+  logout = function() {
+    console.log("in logout function");
+    $.ajax({url: '/logout',
+            success: function(response) {
+              console.log("in success function of logout");
+              console.log("response is " + response);
+              loggedInUser = null;
+              self.username("not logged in");
+              self.isLoggedIn(false);
+              // $('#username-display').html('not logged in');
+            }, error: function(xhr) {
+              console.log("ajax error: " +  xhr);
+            }})
+  }
+
+  doLogin = function() {
+    console.log("in doLogin function");
+    var username = $('#username').val();
+    var password = $('#password').val();
+    // console.log("username is " + $('#username').val());
+    // console.log("password is ******");
+    // $("#progressbar").show();
+
+    $.ajax({url: "/login",
+            data: {username: username, password: password},
+            method: 'POST',
+            success: function(response) {
+              // $("#progressbar").hide();
+              // console.log("in success, response is " + response);
+              if (response == null) {
+                // console.log("we are null!");
+                alert("Invalid login");
+              } else {
+                // $("#username-display").html(response);
+                self.username(response);
+                self.isLoggedIn(true);
+                loggedInUser = response;
+                // console.log("we are not null!");
+                $('#loginModal').modal('toggle');
+              }
+
+            }, error: function(xhr) {
+              // $("#progressbar").hide();
+              // console.log("ajax error: " +  xhr);
+              alert("Error logging in!");
+            }})
+  }
+
+  cancelJob = function() {}
+  terminateJob = function()  {}
+
+} // end of UserViewModel
+
+var model = new DashboardViewModel()
+ko.applyBindings(model);

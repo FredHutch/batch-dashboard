@@ -188,22 +188,35 @@
 
         <h2>Job Status</h2>
 
+        <span data-bind="if: canCancel"> {# FIXME #}
+          <button data-bind="click: cancelJob" title="addme" >Cancel Job</button>
+        </span>
+        <span data-bind="if: canTerminate"> {# FIXME #}
+          <button data-bind="click: terminateJob" title="addme">Terminate Job</button>
+        </span>
+        <p>&nbsp;</p>
+        <div data-bind="ifnot: isLoggedIn">
+          <p>Log in to cancel and terminate jobs you own.</p>
+        </div>
+
+        <div data-bind="with: job">
+
         <table border="0" class="paddingBetweenCols">
           <tr>
             <th align="right"><b>Status:</b></th>
-            <th align="left" id="dialog_job_status"></th>
+            <th data-bind="text: status" align="left" ></th>
           </tr>
           <tr>
             <th align="right"><b>Created at:</b></th>
-            <th align="left" id="dialog_job_createdat"></th>
+            <th data-bind="text: createdAt" align="left"></th>
           </tr>
           <tr>
             <th align="right"><b>Started at:</b></th>
-            <th align="left" id="dialog_job_startedat"></th>
+            <th data-bind="text: startedAt" align="left"></th>
           </tr>
           <tr>
             <th align="right"><b>Queue:</b></th>
-            <th align="left" id="dialog_job_queue"></th>
+            <th data-bind="text: jobQueue" align="left"></th>
           </tr>
         </table>
 
@@ -212,19 +225,19 @@
         <table border="0" class="paddingBetweenCols">
           <tr>
             <th align="right"><b>Job id:</b></th>
-            <th align="left" id="dialog_job_id"></th>
+            <th data-bind="text: jobId" align="left"></th>
           </tr>
           <tr>
             <th align="right"><b>Job name:</b></th>
-            <th align="left" id="dialog_job_name"></th>
+            <th data-bind="text: jobName" align="left"></th>
           </tr>
           <tr>
             <th align="right"><b>Job Definition:</b></th>
-            <th align="left" id="dialog_job_jobdef"></th>
+            <th data-bind="text: jobDefinition" align="left"></th>
           </tr>
           <tr>
             <th align="right"><b>Depends on:</b></th>
-            <th align="left" id="dialog_job_dependson"></th>
+            <th data-bind="text: dependsOnComputed()" align="left"></th>
           </tr>
 
         </table>
@@ -419,6 +432,7 @@
   </div>
 </div>
 
+</div> {# end of data-bind context (job) #}
 
 {# job definition modal #}
 <div class="modal fade" id="jobdef_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -584,16 +598,57 @@
 </div>
 
 
+{# login modal #}
+
+<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Login</h4>
+      </div>
+      <div class="modal-body">
+        <p>Log in with your HutchNet ID and password.</p>
+        <form id="login_form">
+          <table>
+            <tr>
+              <td>HutchNet ID:</td><td><input id="username"></td>
+            </tr>
+            <tr>
+              <td>Password:</td><td><input id="password" type="password"></td>
+            </tr>
+          </table>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button data-bind="click: doLogin" type="button" class="btn btn-primary">Log In</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 {# end modals #}
 
 
   <h1>AWS Batch Dashboard</h1>
+
+  <span data-bind="ifnot: isLoggedIn"><button data-bind="click: login">Log in</button></span>
+  <span data-bind="if: isLoggedIn"><button data-bind="click: logout">Log out</button></span>
+
+Current user: <span id="username-display" data-bind="text: username"></span>
+
+<p>&nbsp</p>
+
 
 <ul>
   <li><a href="#queues_header">Queues</a></li>
   <li><a href="#compute_environments_header">Compute Environments</a></li>
   <li><a href="#jobs_header">Jobs</a></li>
   <li><a href="#job_def_header">Job Definitions</a></li>
+  <li><a href="#submit_job"><b>Submit Job</b></a> TODO: disable unless logged in</li>
 </ul>
 
 <!-- default value for display is 'inline' -->
