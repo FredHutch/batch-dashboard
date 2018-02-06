@@ -15,7 +15,6 @@ pylint = "==1.7.1"
 pyparsing = "==2.2.0"
 wrapt = "==1.10.10"
 flask = "*"
-flask-login = "*"
 flask-session = "*"
 flask-socketio = "*"
 "boto3" = "*"
@@ -24,6 +23,7 @@ flask-restful = "*"
 flask-httpauth = "*"
 requests = "*"
 "ldap3" = "*"
+flask-login = "*"
 
 
 [dev-packages]

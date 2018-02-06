@@ -1,13 +1,22 @@
 #!/usr/bin/env python3
 """
 batch dashboard web application.
+
+One thing to note about this app is that there are two different authentication systems in it.
+
+1) Basic Auth with AWS credentials (access key and secret key) in order to
+   use REST API.
+2) Authenticate with HutchNet ID and password in order to use protected functions
+   (submit/cancel/terminate jobs) from the web GUI.
+
 """
 # see https://github.com/PyCQA/pylint/issues/73
 from distutils.util import strtobool # pylint: disable=import-error, no-name-in-module
 import os
 import sys
 import datetime
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify
+import flask_login
 from flask_restful import Resource, Api
 from flask_httpauth import HTTPBasicAuth
 import requests
@@ -15,9 +24,11 @@ import requests
 from ldap3_auth import authenticate
 import util
 import submit_proxy
-
+import appuser
 
 APP = Flask(__name__, static_url_path='')
+LOGIN_MANAGER = flask_login.LoginManager()
+LOGIN_MANAGER.init_app(APP)
 API = Api(APP)
 
 REQUIRED_ENV_VARS = ['APP_SECRET']
@@ -30,6 +41,13 @@ if NOTSET:
     sys.exit(1)
 
 APP.config['SECRET_KEY'] = os.getenv('APP_SECRET')
+
+
+@LOGIN_MANAGER.user_loader
+def load_user(user_id):
+    "needed by flask-login"
+    # return User.get(user_id)
+    return appuser.User(user_id)
 
 @APP.route('/')
 def index():
@@ -124,25 +142,68 @@ def job_log():
                            start_from_head=start_from_head)
 
 
+@APP.route("/gui_cancel_job", methods=['POST'])
+@flask_login.login_required
+def gui_cancel_job():
+    "cancel a job from the web gui"
+    user = flask_login.current_user.get_id()
+    obj = request.get_json()
+
+    try:
+        result = submit_proxy.cancel_job(user, jobId=obj['jobId'],
+                                         reason="Canceled in Batch Dashboard")
+        # FIXME job does not seem to be canceled???
+        return jsonify(result), 200
+    except Exception as exc: # pylint: disable=broad-except
+        return jsonify(dict(error=str(exc), exception=get_exception_class(exc))), 400
+
+@APP.route("/gui_terminate_job", methods=['POST'])
+@flask_login.login_required
+def gui_terminate_job():
+    "terminate a job from the web gui"
+    user = flask_login.current_user.get_id()
+    obj = request.get_json()
+
+    try:
+        result = submit_proxy.terminate_job(user, jobId=obj['jobId'],
+                                            reason="Terminated in Batch Dashboard")
+        return jsonify(result), 200
+    except Exception as exc: # pylint: disable=broad-except
+        return jsonify(dict(error=str(exc), exception=get_exception_class(exc))), 400
+
+@APP.route("/gui_submit_job", methods=['POST'])
+@flask_login.login_required
+def gui_submit_job():
+    "submit a job from the web gui"
+    pass
+
 
 # gui authentication
 
 @APP.route("/login", methods=["POST"])
 def login():
     "gui login (hutchnet id/password)"
+    if flask_login.current_user.is_authenticated:
+        return jsonify(None)
     username = request.form['username']
     password = request.form['password']
     if authenticate(username, password):
-        session['username'] = username
+        user = appuser.User(username)
+        flask_login.login_user(user, remember=True)
         return jsonify(username)
     return jsonify(None)
+
+
+@APP.route("/get_current_user", methods=['GET'])
+def get_current_user():
+    "get current user"
+    return jsonify(flask_login.current_user.get_id())
 
 
 @APP.route("/logout")
 def logout():
     """Log out."""
-    if 'username' in session:
-        del session['username']
+    flask_login.logout_user()
     return jsonify("ok")
 
 

@@ -1,45 +1,28 @@
 $(document).ready(function() {
 
-  // $("#inner-message").hide();
 
-  $("#myButton").click(function(){
-    console.log("hi");
-    showAlert({"job_name": "my job name", "job_status": "SUBMITTED"});
+  // get current user (if there is one)
+  $.ajax("/get_current_user").done(function(data) {
+    if (data == null) {
+      model.username("not logged in");
+      model.isLoggedIn(false);
+    } else {
+      model.username(data);
+      model.isLoggedIn(true);
+    }
   });
 
 
-    var showAlert = function(msg) {
-      console.log("showing alert");
-      $("#inner-message").html("Job " + msg.job_name + " has reached status " + msg.job_status + ".");
-      $("#inner-message").fadeTo(2000, 500).slideUp(500, function(){
-        $("#inner-message").slideUp(500);
-      });
+  var resetHourglass = function(payload) {
+    console.log("changing hourglass back to reload icon...");
+    $(".reload").attr("src", "/images/refresh.png");
+  }
 
-    }
 
     var states = ['SUBMITTED', 'PENDING', 'RUNNABLE', 'STARTING',
               'RUNNING', 'FAILED', 'SUCCEEDED'];
 
 
-    var crement = function(queue, status, increase) {
-      selector = "#" + queue + "_" + status;
-      num = parseInt($.trim($(selector).text()));
-      if (increase) {
-        num++;
-      } else {
-        num--;
-      }
-      $(selector).html(num.toString());
-
-    }
-
-    var increment = function(queue, status) {
-      crement(queue, status, true);
-    }
-
-    var decrement = function(queue, status) {
-      crement(queue, status, false);
-    }
 
     var getCurrentStatus = function(jobId) {
       return $.trim(jobTable.cell("#row_" + jobId, 3).data());
@@ -231,19 +214,36 @@ $(document).ready(function() {
 
     // click reload button for queues table
     $('#reload_queue_table').on('click', function(event) {
-      queueTable.ajax.reload();
+      console.log("reload queue table...");
+      queueTable.ajax.reload(resetHourglass);
     })
 
     // click reload button for envs table
     $('#reload_env_table').on('click', function(event) {
-      envTable.ajax.reload();
+      console.log("reload env table...")
+      envTable.ajax.reload(resetHourglass);
     })
 
 
     // click reload button for jobs table
     $('#reload_job_table').on('click', function(event) {
-      jobTable.ajax.reload();
+      console.log("reload job table...")
+      jobTable.ajax.reload(resetHourglass);
     })
+
+    // click reload button for job definitions table
+    $('#reload_jobdef_table').on('click', function(event) {
+      console.log("reload job def table...")
+      jobDefTable.ajax.reload(resetHourglass);
+    })
+
+    $(".reload").on('click', function(event) {
+      console.log("heehee");
+      console.log(event.target.id);
+      var selector = "#" + event.target.id;
+      $(selector).attr("src", "/images/hourglass.png");
+    })
+
 
 
     // listen for draw event on queue table so we can grab distinct queue names
@@ -322,6 +322,11 @@ $(document).ready(function() {
         });
     }); // end of click event handler for job definition table
 
+
+    // cancel button listener
+    $("#cancel_job").click(function(){
+      console.log("so you want to cancel this job? " + model.job['jobId']);
+    });
 
 
     var populateQueueDialog = function(obj) {
@@ -444,6 +449,57 @@ $(document).ready(function() {
             return ""
           }
       }
+
+
+      canTerminate = function() {
+          if (!model.isLoggedIn()) return false;
+          try {
+            var envVars = obj.container.environment;
+            for (var i = 0; i < envVars.length; i++) {
+              item = envVars[i];
+              if (item['name'] == ['AWS_BATCH_JOB_SUBMITTED_BY']) {
+                return item['value'] == model.username()
+              }
+            }
+            return false;
+          } catch (err) {
+            return false;
+          }
+      }
+
+      canCancel = function() {
+        if (!canTerminate()) return false;
+        return ['SUBMITTED', 'PENDING', 'RUNNABLE'].includes(obj['status']);
+      }
+
+      cancelJob = function() {
+        console.log("so you want to cancel " + obj['jobId']);
+        $.ajax({
+          method: "POST",
+          url: "/gui_cancel_job",
+          contentType: "application/json",
+          data: JSON.stringify({jobId: obj['jobId']})
+        }).done(function(msg) {
+          alert("Job canceled!");
+        }).fail(function(msg) {
+          alert("Error trying to cancel job:" + msg['responseText']);
+        });
+      }
+
+      terminateJob = function()  {
+        console.log("so you want to terminate " + obj['jobId']);
+        $.ajax({
+          method: "POST",
+          url: "/gui_terminate_job",
+          contentType: "application/json",
+          data: JSON.stringify({jobId: obj['jobId']})
+        }).done(function(msg) {
+          alert("Job terminated!");
+        }).fail(function(msg) {
+          alert("Error trying to terminate job:" + msg['responseText']);
+        });
+      }
+
 
 
       model.job(obj);//dante
@@ -669,33 +725,10 @@ containerProperties['mountPoints'].map(function(item){
 function DashboardViewModel() {
   var self = this;
 
-  self.username = ko.observable("not logged in");
+  self.username = ko.observable();
   self.isLoggedIn = ko.observable(false);
   self.job = ko.observable();
 
-  self.canTerminate = ko.computed(function() {
-      console.log("in canTerminate(), username is " + self.username() + " submitted by " + $("ENV_AWS_BATCH_JOB_SUBMITTED_BY").html());
-      if (!self.isLoggedIn()) return false;
-      try {
-        var envVars = self.job.container.environment;
-        for (var i = 0; i < envVars.length; i++) {
-          item = envVars[i];
-          if (item['name'] == ['AWS_BATCH_JOB_SUBMITTED_BY']) {
-            return item['value'] == self.username()
-          }
-        }
-        return false;
-      } catch (err) {
-        return false;
-      }
-  }, self);
-
-  self.canCancel = ko.computed(function() {
-    console.log("in canCancel()");
-    if (self.canTerminate()) return false;
-    //SUBMITTED , PENDING , or RUNNABLE
-    return ['SUBMITTED', 'PENDING', 'RUNNABLE'].includes($("#dialog_job_status").html())
-  }, self)
 
   login = function() {
     $("#loginModal").modal();
@@ -750,8 +783,6 @@ function DashboardViewModel() {
             }})
   }
 
-  cancelJob = function() {}
-  terminateJob = function()  {}
 
 } // end of UserViewModel
 

@@ -188,18 +188,20 @@
 
         <h2>Job Status</h2>
 
-        <span data-bind="if: canCancel"> {# FIXME #}
-          <button data-bind="click: cancelJob" title="addme" >Cancel Job</button>
+        <div data-bind="with: job">
+
+
+        <span data-bind="if: canCancel()"> {# FIXME #}
+          <button data-bind="click: cancelJob" title="" >Cancel Job</button>
         </span>
-        <span data-bind="if: canTerminate"> {# FIXME #}
-          <button data-bind="click: terminateJob" title="addme">Terminate Job</button>
+        <span data-bind="if: canTerminate()"> {# FIXME #}
+          <button data-bind="click: terminateJob" title="">Terminate Job</button>
         </span>
         <p>&nbsp;</p>
-        <div data-bind="ifnot: isLoggedIn">
+        <div data-bind="ifnot: $parent.isLoggedIn">
           <p>Log in to cancel and terminate jobs you own.</p>
         </div>
 
-        <div data-bind="with: job">
 
         <table border="0" class="paddingBetweenCols">
           <tr>
@@ -651,8 +653,6 @@ Current user: <span id="username-display" data-bind="text: username"></span>
   <li><a href="#submit_job"><b>Submit Job</b></a> TODO: disable unless logged in</li>
 </ul>
 
-<!-- default value for display is 'inline' -->
-<button id="myButton" style="display: none;">pressme</button>
 
   <div id="message" style="z-index: 9999; position : fixed; top: 0; right: 20%; padding: 5px 0 0 5px; height: 140px; width: 300px;">
       <div id="inner-message" style="display: none;" class="alert alert-info">
@@ -663,7 +663,7 @@ Current user: <span id="username-display" data-bind="text: username"></span>
 <h2 id="queues_header">Queues</h2>
 
     <div style="float: right; padding: 5px;">
-      <img id="reload_queue_table" src="/images/refresh.png" height="30" width="30" title="reload data"/>
+      <img id="reload_queue_table" class="reload" src="/images/refresh.png" height="30" width="30" title="reload data"/>
     </div>
 
     <table id="queue_summary_table" class="display" style="float: none">
@@ -686,7 +686,7 @@ Current user: <span id="username-display" data-bind="text: username"></span>
 <h2 id="compute_environments_header">Compute Environments</h2>
 
 <div style="float: right; padding: 5px;">
-  <img id="reload_env_table" src="/images/refresh.png" height="30" width="30" title="reload data"/>
+  <img id="reload_env_table" class="reload" src="/images/refresh.png" height="30" width="30" title="reload data"/>
 </div>
 
 
@@ -707,7 +707,7 @@ Current user: <span id="username-display" data-bind="text: username"></span>
 <h2 id="jobs_header">Jobs</h2>
 
 <div style="float: right; padding: 5px;">
-  <img id="reload_job_table" src="/images/refresh.png" height="30" width="30" title="reload data"/>
+  <img id="reload_job_table" class="reload" src="/images/refresh.png" height="30" width="30" title="reload data"/>
 </div>
 
 
@@ -744,7 +744,7 @@ Current user: <span id="username-display" data-bind="text: username"></span>
 <h2 id="job_def_header">Job Definitions</h2>
 
 <div style="float: right; padding: 5px;">
-  <img id="reload_jobdef_table" src="/images/refresh.png" height="30" width="30" title="reload data"/>
+  <img id="reload_jobdef_table" class="reload" src="/images/refresh.png" height="30" width="30" title="reload data"/>
 </div>
 
 
