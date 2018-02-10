@@ -9,6 +9,7 @@
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.html5.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.print.min.js"></script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/1.3.1/js/buttons.bootstrap.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.3/chosen.jquery.min.js"></script>
 <!-- FIXME eventually remove the timestamp bit from here: -->
 <script type="text/javascript" charset="utf8" src="/js/batch-dashboard.js?timestamp={{timestamp}}"></script>{% endblock %}
 {% block content %}
@@ -437,168 +438,176 @@
 </div> {# end of data-bind context (job) #}
 
 {# job definition modal #}
-<div class="modal fade" id="jobdef_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Job Definition <span id="dialog_jobdef_header"></span></h4>
-      </div>
-      <div class="modal-body">
-        <h3>Job definition attributes</h3>
+<div data-bind="with: jobDefinition">
+
+    <div class="modal fade" id="jobdef_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Job Definition <span id="dialog_jobdef_header"></span></h4>
+          </div>
+          <div class="modal-body">
+            <h3>Job definition attributes</h3>
+
+            <table border="0" class="paddingBetweenCols">
+              <tr>
+                <th align="right"><b>Job defninition name : revision: </b></th>
+                <th align="left" data-bind="text: nameRevision()"></th>
+              </tr>
+              <tr>
+                <th align="right"><b>Job definition ARN: </b></th>
+                <th align="left" data-bind="text: jobDefinitionArn"></th>
+              </tr>
+              <tr>
+                <th align="right"><b>Status: </b></th>
+                <th align="left" data-bind="text: status"></th>
+              </tr>
+            </table>
+
+            <h3>Resource Requirements</h3>
+
+    <div data-bind="with: containerProperties">
+
+
+                <table border="0" class="paddingBetweenCols">
+                  <tr>
+                    <th align="right"><b>Job role ARN: </b></th>
+                    <th align="left" data-bind="text: jobRoleArn"></th>
+                  </tr>
+                  <tr>
+                    <th align="right"><b>Image: </b></th>
+                    <th align="left" data-bind="text: image"></th>
+                  </tr>
+                </table>
+
+        <h3>Environment</h3>
 
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <th align="right"><b>Job defninition name : revision: </b></th>
-            <th align="left" id="dialog_jobdef_namerevision"></th>
+            <th align="right"><b>Command: </b></th>
+            <th class="breakMe" align="left" data-bind="text: computedCommand()"></th>
           </tr>
           <tr>
-            <th align="right"><b>Job definition ARN: </b></th>
-            <th align="left" id="dialog_jobdef_arn"></th>
+            <th align="right"><b>vCPUs: </b></th>
+            <th align="left" data-bind="text: vcpus"></th>
           </tr>
           <tr>
-            <th align="right"><b>Status: </b></th>
-            <th align="left" id="dialog_jobdef_status"></th>
+            <th align="right"><b>Memory (MB): </b></th>
+            <th align="left" data-bind="text: memory"></th>
           </tr>
         </table>
 
-        <h3>Resource Requirements</h3>
+    </div>
+    <h3>Retry Strategy</h3>
 
+    <div data-bind="with: retryStrategy">
         <table border="0" class="paddingBetweenCols">
           <tr>
-            <th align="right"><b>Job role ARN: </b></th>
-            <th align="left" id="dialog_jobdef_jobrolearn"></th>
-          </tr>
-          <tr>
-            <th align="right"><b>Image: </b></th>
-            <th align="left" id="dialog_jobdef_image"></th>
+            <th align="right"><b>Attempts: </b></th>
+            <th align="left" data-bind="text: attempts"></th>
           </tr>
         </table>
+    </div>
 
-<h3>Environment</h3>
+    <h3>Parameters</h3>
 
-<table border="0" class="paddingBetweenCols">
-  <tr>
-    <th align="right"><b>Command: </b></th>
-    <th class="breakMe" align="left" id="dialog_jobdef_command"></th>
-  </tr>
-  <tr>
-    <th align="right"><b>vCPUs: </b></th>
-    <th align="left" id="dialog_jobdef_vcpus"></th>
-  </tr>
-  <tr>
-    <th align="right"><b>Memory (MB): </b></th>
-    <th align="left" id="dialog_jobdef_memory"></th>
-  </tr>
-</table>
-
-<h3>Retry Strategy</h3>
-
-<table border="0" class="paddingBetweenCols">
-  <tr>
-    <th align="right"><b>Attempts: </b></th>
-    <th align="left" id="dialog_jobdef_attempts"></th>
-  </tr>
-</table>
+    <table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_parameters">
+      <thead>
+        <tr>
+            {#  TODO: finish knockoutifying this dialog #}
+          <td align="right">Name</td>
+          <td align="left">Value</td>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    {#
+      <tr>
+        <th align="right"><b></b></th> ## key
+        <th align="left"></th> ## value
+      </tr>
+    #}
+    </table>
 
 
-<h3>Parameters</h3>
+    <h3>Environment variables</h3>
 
-<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_parameters">
-  <thead>
-    <tr>
-      <th align="right">Name</th>
-      <th align="left">Value</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-{#
-  <tr>
-    <th align="right"><b></b></th> ## key
-    <th align="left"></th> ## value
-  </tr>
-#}
-</table>
-
-
-<h3>Environment variables</h3>
-
-<table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_envvars">
-  <thead>
-    <tr>
-      <th align="right">Name</th>
-      <th align="left">Value</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-{#
-  <tr>
-    <th align="right"><b></b></th> ## key
-    <th align="left"></th> ## value
-  </tr>
-#}
-</table>
+    <table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_envvars">
+      <thead>
+        <tr>
+          <th align="right">Name</th>
+          <th align="left">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    {#
+      <tr>
+        <th align="right"><b></b></th> ## key
+        <th align="left"></th> ## value
+      </tr>
+    #}
+    </table>
 
 
 
-<h3>uLimits</h3>
+    <h3>uLimits</h3>
 
-<table id="dialog_jobdef_ulimits" class="paddingBetweenCols dynamicDialogTable">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Soft limit</th>
-      <th>Hard limit</th>
-  </thead>
+    <table id="dialog_jobdef_ulimits" class="paddingBetweenCols dynamicDialogTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Soft limit</th>
+          <th>Hard limit</th>
+      </thead>
 
-  <tbody>
+      <tbody>
 
-  </tbody>
-</table>
-
-
-<h3>Volumes</h3>
-
-<table id="dialog_jobdef_volumes" class="paddingBetweenCols dynamicDialogTable">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Source path</th>
-  </thead>
-
-  <tbody>
-
-  </tbody>
-</table>
-
-<h3>Mount points</h3>
-
-<p><b id="dialog_jobdef_filesystemstatus">{# Read only filesystem #}</b></p>
-
-<table id="dialog_jobdef_mountpoints" class="paddingBetweenCols dynamicDialogTable">
-  <thead>
-    <tr>
-      <th>Container path</th>
-      <th>Source volume</th>
-      <th>Read only</th>
-  </thead>
-
-  <tbody>
-
-  </tbody>
-</table>
+      </tbody>
+    </table>
 
 
-      </div>
-      <div class="modal-footer">
-        <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+    <h3>Volumes</h3>
+
+    <table id="dialog_jobdef_volumes" class="paddingBetweenCols dynamicDialogTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Source path</th>
+      </thead>
+
+      <tbody>
+
+      </tbody>
+    </table>
+
+    <h3>Mount points</h3>
+
+    <p><b id="dialog_jobdef_filesystemstatus">{# Read only filesystem #}</b></p>
+
+    <table id="dialog_jobdef_mountpoints" class="paddingBetweenCols dynamicDialogTable">
+      <thead>
+        <tr>
+          <th>Container path</th>
+          <th>Source volume</th>
+          <th>Read only</th>
+      </thead>
+
+      <tbody>
+
+      </tbody>
+    </table>
+
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 </div>
-
 
 {# login modal #}
 
@@ -631,6 +640,57 @@
 </div>
 
 
+{# submit job modal #}
+<div data-bind="with: submitJob">
+    <div class="modal fade" id="submit_job_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="dialog_queue_header">Queue queueName</h4>
+          </div>
+          <div class="modal-body">
+            <h3>Submit an AWS Batch Job</h3>
+            <p>Select a job definition to run and apply any command, parameter, or environment variable overrides.</p>
+
+            <table border="0" class="paddingBetweenCols">
+              <tr>
+                <td align="right"><b>Job name: </b></td>
+                <td align="left">
+                    <input data-bind="value: name"/>
+                </td>
+              </tr>
+              <tr>
+                <td align="right"><b>Job definition: </b></td>
+                <td align="left">
+                    <select id="submit_job_definitions" data-bind="foreach: $parent.jobDefinitionList">
+                        <option data-bind="text: $data"></option>
+                    </select>
+                </td>
+              </tr>
+              <tr>
+                <th align="right"><b>Priority: </b></th>
+                <th align="left" id="dialog_queue_priority"></th>
+              </tr>
+            </table>
+
+            <h3>Compute Environments</h3>
+
+            <table id="dialog_queue_env_table" class="paddingBetweenCols dynamicDialogTable">
+              <tr>
+                <th>Order</th>
+                <th>Compute environment</th>
+              </tr>
+            </table>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
 
 {# end modals #}
 
@@ -650,7 +710,8 @@ Current user: <span id="username-display" data-bind="text: username"></span>
   <li><a href="#compute_environments_header">Compute Environments</a></li>
   <li><a href="#jobs_header">Jobs</a></li>
   <li><a href="#job_def_header">Job Definitions</a></li>
-  <li><a href="#submit_job"><b>Submit Job</b></a> TODO: disable unless logged in</li>
+  {#  TODO disable unless 1) logged in and 2) job def table has finished loading #}
+  <li><a id="submit_job"><b>Submit Job</b></a> TODO: disable unless logged in</li>
 </ul>
 
 

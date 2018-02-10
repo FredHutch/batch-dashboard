@@ -133,7 +133,7 @@ $(document).ready(function() {
      } );
  } );
 
-    // various click handlers
+    // various click handlers/listeners
 
     // click on one of the statuses of a parent array job
     $("#array_job_status_table").on('click', ".child_status", function(event) {
@@ -328,6 +328,44 @@ $(document).ready(function() {
       console.log("so you want to cancel this job? " + model.job['jobId']);
     });
 
+    // "submit job" listener
+    $("#submit_job").click(function() {
+        var data = jobDefTable.rows().data();
+        var tmp = [];
+        if (model.jobDefinitionList().length == 0) {
+
+            for (var i = 0; i < data.length; i++) {
+                tmp.push({name: data[i][0], revision: data[i][1]});
+            }
+            tmp.sort(function(a, b) {
+                if (a['name'] == b['name']) {
+                    //return ((x.Name == y.Name) ? 0 : ((x.Name > y.Name)? 1: -1));
+                    return a['revision'] == b['revision'] ? 0 : a['revision'] < b['revision'] ? 1 : -1;
+                } else {
+                    return a['name'].toLowerCase() == b['name'].toLowerCase ? 0 : a['name'].toLowerCase() > b['name'].toLowerCase() ? 1 : -1;
+                }
+            });
+            var tmp2 = [];
+            for (var i = 0; i < tmp.length; i++) {
+                tmp2.push(tmp[i]['name'] + ":" + tmp[i]['revision']);
+            }
+            tmp2.unshift("");
+            console.log("tmp2 is");
+            console.log(tmp2);
+            model.jobDefinitionList(tmp2);
+        }
+        $("#submit_job_definitions").chosen({width: "300px"});
+        $("#submit_job_dialog").modal('show');
+    });
+
+    // user picks a different job definition in job submit dialog
+    // this means we have to reset a bunch of fields in model.submitJob
+    $("#submit_job_definitions").on('change', function(evt, params) {
+        console.log("value has changed to");
+        console.log(params['selected']);
+    });
+
+    // end of listeners / click handlers (?)
 
     var populateQueueDialog = function(obj) {
       $("#dialog_queue_header").html("Queue " + obj['jobQueueName']);
@@ -502,7 +540,7 @@ $(document).ready(function() {
 
 
 
-      model.job(obj);//dante
+      model.job(obj);
 
 
       $("#array_job_details").hide();
@@ -639,6 +677,23 @@ $(document).ready(function() {
 
 var populateJobDefDialog = function(obj) {
   // job status
+
+  obj['nameRevision'] = function() {
+      return obj.jobDefinitionName + ":" + obj.revision;
+  }
+
+  obj['containerProperties']['computedCommand'] = function() {
+      return obj.containerProperties['command'].join(", ");
+  }
+
+  // attempts
+  if (!obj.hasOwnProperty('retryStrategy')) {
+      obj['retryStrategy'] = {attempts: 1};
+  }
+
+
+  model.jobDefinition(obj);
+
   var nameRevision = obj["jobDefinitionName"] + ":" + obj['revision'];
   $("#dialog_jobdef_header").html(nameRevision);
   $("#dialog_jobdef_namerevision").html(nameRevision);
@@ -728,7 +783,9 @@ function DashboardViewModel() {
   self.username = ko.observable();
   self.isLoggedIn = ko.observable(false);
   self.job = ko.observable();
-
+  self.submitJob = ko.observable({name: ''});
+  self.jobDefinition = ko.observable();
+  self.jobDefinitionList = ko.observableArray();
 
   login = function() {
     $("#loginModal").modal();
