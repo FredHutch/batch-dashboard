@@ -669,8 +669,12 @@
                 </td>
               </tr>
               <tr>
-                <th align="right"><b>Priority: </b></th>
-                <th align="left" id="dialog_queue_priority"></th>
+                <td align="right"><b>Job Queue: </b></td>
+                <td align="left">
+                    <select id="submit_job_queues" data-bind="foreach: $parent.queueList">
+                        <option data-bind="text: $data"></option>
+                    </select>
+                </td>
               </tr>
             </table>
 
@@ -710,9 +714,9 @@ Current user: <span id="username-display" data-bind="text: username"></span>
   <li><a href="#compute_environments_header">Compute Environments</a></li>
   <li><a href="#jobs_header">Jobs</a></li>
   <li><a href="#job_def_header">Job Definitions</a></li>
-  {#  TODO disable unless 1) logged in and 2) job def table has finished loading #}
-  <li><a id="submit_job"><b>Submit Job</b></a> TODO: disable unless logged in</li>
 </ul>
+
+<span data-bind="if: okToSubmit"><button id="submit_job">Submit Job</button></span>
 
 
   <div id="message" style="z-index: 9999; position : fixed; top: 0; right: 20%; padding: 5px 0 0 5px; height: 140px; width: 300px;">

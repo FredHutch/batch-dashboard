@@ -329,7 +329,7 @@ $(document).ready(function() {
     });
 
     // "submit job" listener
-    $("#submit_job").click(function() {
+    $("body").on('click', "#submit_job", function() {
         var data = jobDefTable.rows().data();
         var tmp = [];
         if (model.jobDefinitionList().length == 0) {
@@ -350,11 +350,20 @@ $(document).ready(function() {
                 tmp2.push(tmp[i]['name'] + ":" + tmp[i]['revision']);
             }
             tmp2.unshift("");
-            console.log("tmp2 is");
-            console.log(tmp2);
             model.jobDefinitionList(tmp2);
         }
+        if (model.queueList().length == 0) {
+            var data = queueTable.rows().data();
+            var tmp = [];
+            tmp.push("");
+            for (var i = 0; i < data.length; i++) {
+                tmp.push(data[i][0]);
+            }
+            model.queueList(tmp);
+        }
         $("#submit_job_definitions").chosen({width: "300px"});
+        $("#submit_job_queues").chosen({width: "150px"});
+        model.isSubmittingArrayJob(false);
         $("#submit_job_dialog").modal('show');
     });
 
@@ -364,6 +373,25 @@ $(document).ready(function() {
         console.log("value has changed to");
         console.log(params['selected']);
     });
+
+
+    // job definition table state listener
+    // when table data has been loaded, we can allow job submission
+    // (provided user is logged in)
+    // $("#job_def_table").on('stateLoaded.dt', function() {
+    //     console.log("job def table data has been laoded (stateLoaded)");
+    // })
+    $("#job_def_table").on('xhr.dt', function() {
+        console.log("job def table data has been laoded (xhr)");
+        model.jobDefsLoaded(true);
+    })
+
+    $("#queue_summary_table").on('xhr.dt', function() {
+        console.log("queue table data has been laoded (xhr)");
+        model.queuesLoaded(true);
+    })
+
+    //dante
 
     // end of listeners / click handlers (?)
 
@@ -786,6 +814,15 @@ function DashboardViewModel() {
   self.submitJob = ko.observable({name: ''});
   self.jobDefinition = ko.observable();
   self.jobDefinitionList = ko.observableArray();
+  self.queueList = ko.observableArray();
+  self.jobDefsLoaded = ko.observable(false);
+  self.queuesLoaded = ko.observable(false);
+  self.isSubmittingArrayJob = ko.observable(false);
+
+  self.okToSubmit = ko.computed(function() {
+      // FIXME remove comments below:
+      return /* self.isLoggedIn() && */ self.jobDefsLoaded() && self.queuesLoaded();
+  }, this);
 
   login = function() {
     $("#loginModal").modal();
