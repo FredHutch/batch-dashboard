@@ -14,7 +14,6 @@ $(document).ready(function() {
 
 
   var resetHourglass = function(payload) {
-    console.log("changing hourglass back to reload icon...");
     $(".reload").attr("src", "/images/refresh.png");
   }
 
@@ -98,32 +97,15 @@ $(document).ready(function() {
     );
 
 
-/*
-    // filters
-    $("#queue_filter").change(function(){
-        var queue = $("#queue_filter option:selected").text();
-        console.log("you chose the queue "  + queue);
-        jobTable.draw();
-    });
-
-    // filters
-    $("#state_filter").change(function(){
-        var state = $("#state_filter option:selected").text();
-        console.log("you chose the state "  + state);
-        jobTable.draw();
-    });
-*/
 
 // Apply the search
  jobTable.columns().every( function () {
      var that = this;
 
      $( 'select', this.footer() ).on( 'change', function () {
-         console.log("your filter is " + this.value);
          var searchString = this.value;
          if (this.value == "No Filter") {
              searchString = "";
-             console.log("searchString changed to " + searchString);
          }
          if ( that.search() !== searchString ) {
              that
@@ -200,11 +182,7 @@ $(document).ready(function() {
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_queue", { queue_name: id} )
         .done(function( obj ) {
-          console.log( "JSON Data: " +obj );
-          console.log("State is " + obj['state']);
-          //alert(json);
           populateQueueDialog(obj);
-          // alert(JSON.stringify(obj));
         })
         .fail(function( jqxhr, textStatus, error ) {
           var err = textStatus + ", " + error;
@@ -214,32 +192,26 @@ $(document).ready(function() {
 
     // click reload button for queues table
     $('#reload_queue_table').on('click', function(event) {
-      console.log("reload queue table...");
       queueTable.ajax.reload(resetHourglass);
     })
 
     // click reload button for envs table
     $('#reload_env_table').on('click', function(event) {
-      console.log("reload env table...")
       envTable.ajax.reload(resetHourglass);
     })
 
 
     // click reload button for jobs table
     $('#reload_job_table').on('click', function(event) {
-      console.log("reload job table...")
       jobTable.ajax.reload(resetHourglass);
     })
 
     // click reload button for job definitions table
     $('#reload_jobdef_table').on('click', function(event) {
-      console.log("reload job def table...")
       jobDefTable.ajax.reload(resetHourglass);
     })
 
     $(".reload").on('click', function(event) {
-      console.log("heehee");
-      console.log(event.target.id);
       var selector = "#" + event.target.id;
       $(selector).attr("src", "/images/hourglass.png");
     })
@@ -272,13 +244,10 @@ $(document).ready(function() {
 
     // click event handler for compute environment table
     $('#comp_env_table').on( 'click', '.compute_environment', function (event) {
-      console.log("in click handler for compute environment");
       clearTables();
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_env", { env_name: id} )
         .done(function( obj ) {
-          // console.log( "JSON Data: " +obj );
-          // console.log(JSON.stringify(obj));
           populateEnvDialog(obj);
         })
         .fail(function( jqxhr, textStatus, error ) {
@@ -291,13 +260,10 @@ $(document).ready(function() {
 
     // click event handler for job table
     $('#job_table').on( 'click', '.job_id', function (event) {
-      console.log("in click handler for job table");
       clearTables();
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_job", { job_id: id} )
         .done(function( obj ) {
-          // console.log( "JSON Data: " +obj );
-          // console.log(JSON.stringify(obj));
           populateJobDialog(obj);
         })
         .fail(function( jqxhr, textStatus, error ) {
@@ -309,7 +275,6 @@ $(document).ready(function() {
 
     // click event handler for job definition table
     $('#job_def_table').on( 'click', '.jobdef', function (event) {
-      console.log("in click handler for job definition table");
       clearTables();
       var id = $(event.target).attr('id');
       $.getJSON( "/describe_job_definition", { jobdef_id: id} )
@@ -323,10 +288,6 @@ $(document).ready(function() {
     }); // end of click event handler for job definition table
 
 
-    // cancel button listener
-    $("#cancel_job").click(function(){
-      console.log("so you want to cancel this job? " + model.job['jobId']);
-    });
 
     // "submit job" listener
     $("body").on('click', "#submit_job", function() {
@@ -349,7 +310,7 @@ $(document).ready(function() {
             for (var i = 0; i < tmp.length; i++) {
                 tmp2.push(tmp[i]['name'] + ":" + tmp[i]['revision']);
             }
-            tmp2.unshift("");
+            // tmp2.unshift("");
             model.jobDefinitionList(tmp2);
         }
         if (model.queueList().length == 0) {
@@ -363,7 +324,7 @@ $(document).ready(function() {
         }
         $("#submit_job_definitions").chosen({width: "300px"});
         $("#submit_job_queues").chosen({width: "150px"});
-        model.isSubmittingArrayJob(false);
+        model.jobType("single");
         $("#submit_job_dialog").modal('show');
     });
 
@@ -371,27 +332,27 @@ $(document).ready(function() {
     // this means we have to reset a bunch of fields in model.submitJob
     $("#submit_job_definitions").on('change', function(evt, params) {
         console.log("value has changed to");
-        console.log(params['selected']);
+        if (params && params.hasOwnProperty("selected")) {
+            console.log(params.selected);
+            console.log(model.submitJob);
+            // console.log(model.submitJob.selectedJobDef());
+            // console.log(model.submitJob['selectedJobDef']);
+            // TODO more to come
+        }
     });
+
 
 
     // job definition table state listener
     // when table data has been loaded, we can allow job submission
     // (provided user is logged in)
-    // $("#job_def_table").on('stateLoaded.dt', function() {
-    //     console.log("job def table data has been laoded (stateLoaded)");
-    // })
     $("#job_def_table").on('xhr.dt', function() {
-        console.log("job def table data has been laoded (xhr)");
         model.jobDefsLoaded(true);
     })
 
     $("#queue_summary_table").on('xhr.dt', function() {
-        console.log("queue table data has been laoded (xhr)");
         model.queuesLoaded(true);
     })
-
-    //dante
 
     // end of listeners / click handlers (?)
 
@@ -539,7 +500,6 @@ $(document).ready(function() {
       }
 
       cancelJob = function() {
-        console.log("so you want to cancel " + obj['jobId']);
         $.ajax({
           method: "POST",
           url: "/gui_cancel_job",
@@ -553,7 +513,6 @@ $(document).ready(function() {
       }
 
       terminateJob = function()  {
-        console.log("so you want to terminate " + obj['jobId']);
         $.ajax({
           method: "POST",
           url: "/gui_terminate_job",
@@ -618,7 +577,6 @@ $(document).ready(function() {
       obj['attempts'].map(function(item, index) {
         var html = "<tr>\n";
         html += "<td>" + (index + 1) + "of " + obj['attempts'].length + "</td>\n";
-        console.log("lsn = " + item['container']['logStreamName']);
         html += "<td><a target='_blank' href='/job_log?jobId=" + obj['jobId'] +  "&attempt=" + index + "'>View logs</a></td>\n";
         html += "<td>" + new Date(item['startedAt']) + "</td>\n";
         html += "<td>" + new Date(item['stoppedAt']) + "</td>\n";
@@ -729,7 +687,6 @@ var populateJobDefDialog = function(obj) {
   $("#dialog_jobdef_arn").html(obj['"jobDefinitionArn"']);
   $("#dialog_jobdef_status").html(obj["status"]);
   var containerProperties = obj['containerProperties'];
-  console.log("containerProperties is " + containerProperties);
   if (containerProperties.hasOwnProperty("jobRoleArn")) {
     $("#dialog_jobdef_jobrolearn").html(containerProperties["jobRoleArn"]);
   }
@@ -811,13 +768,18 @@ function DashboardViewModel() {
   self.username = ko.observable();
   self.isLoggedIn = ko.observable(false);
   self.job = ko.observable();
-  self.submitJob = ko.observable({name: ''});
+  self.submitJob = ko.observable({name: '', arraySize: null, nToN: null,
+    runChildrenSequentially: false, selectedJobDef: ko.observable()});
   self.jobDefinition = ko.observable();
   self.jobDefinitionList = ko.observableArray();
   self.queueList = ko.observableArray();
   self.jobDefsLoaded = ko.observable(false);
   self.queuesLoaded = ko.observable(false);
-  self.isSubmittingArrayJob = ko.observable(false);
+  self.jobType = ko.observable("single");
+
+  self.isSubmittingArrayJob = ko.computed(function() {
+      return self.jobType() == "array";
+  }, this);
 
   self.okToSubmit = ko.computed(function() {
       // FIXME remove comments below:
@@ -830,11 +792,8 @@ function DashboardViewModel() {
   }
 
   logout = function() {
-    console.log("in logout function");
     $.ajax({url: '/logout',
             success: function(response) {
-              console.log("in success function of logout");
-              console.log("response is " + response);
               loggedInUser = null;
               self.username("not logged in");
               self.isLoggedIn(false);
@@ -845,34 +804,23 @@ function DashboardViewModel() {
   }
 
   doLogin = function() {
-    console.log("in doLogin function");
     var username = $('#username').val();
     var password = $('#password').val();
-    // console.log("username is " + $('#username').val());
-    // console.log("password is ******");
-    // $("#progressbar").show();
 
     $.ajax({url: "/login",
             data: {username: username, password: password},
             method: 'POST',
             success: function(response) {
-              // $("#progressbar").hide();
-              // console.log("in success, response is " + response);
               if (response == null) {
-                // console.log("we are null!");
                 alert("Invalid login");
               } else {
-                // $("#username-display").html(response);
                 self.username(response);
                 self.isLoggedIn(true);
                 loggedInUser = response;
-                // console.log("we are not null!");
                 $('#loginModal').modal('toggle');
               }
 
             }, error: function(xhr) {
-              // $("#progressbar").hide();
-              // console.log("ajax error: " +  xhr);
               alert("Error logging in!");
             }})
   }
