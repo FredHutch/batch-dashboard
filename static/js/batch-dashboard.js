@@ -316,7 +316,6 @@ $(document).ready(function() {
         if (model.queueList().length == 0) {
             var data = queueTable.rows().data();
             var tmp = [];
-            tmp.push("");
             for (var i = 0; i < data.length; i++) {
                 tmp.push(data[i][0]);
             }
@@ -333,10 +332,9 @@ $(document).ready(function() {
     $("#submit_job_definitions").on('change', function(evt, params) {
         console.log("value has changed to");
         if (params && params.hasOwnProperty("selected")) {
-            console.log(params.selected);
-            console.log(model.submitJob);
-            // console.log(model.submitJob.selectedJobDef());
-            // console.log(model.submitJob['selectedJobDef']);
+            // console.log(params.selected);
+            // console.log(model.submitJob());
+            console.log(model.submitJob().selectedJobDef())
             // TODO more to come
         }
     });
@@ -760,6 +758,8 @@ containerProperties['mountPoints'].map(function(item){
 
 }); // end of ready function
 
+
+
 // begin knockout model code
 
 function DashboardViewModel() {
@@ -769,7 +769,65 @@ function DashboardViewModel() {
   self.isLoggedIn = ko.observable(false);
   self.job = ko.observable();
   self.submitJob = ko.observable({name: '', arraySize: null, nToN: null,
-    runChildrenSequentially: false, selectedJobDef: ko.observable()});
+    runChildrenSequentially: false, selectedJobDef: ko.observable(),
+    selectedQueue: ko.observable(), jobDependsOn: ko.observable(),
+    spaceDelimitedCommand: ko.observable(), commandItems: ko.observableArray()
+  });
+  self.submitJob().jsonCommand = ko.computed(function() {
+      console.log("haha " + self.submitJob().spaceDelimitedCommand());
+      if (typeof(self.submitJob().spaceDelimitedCommand()) === "undefined") {
+          return "[]";
+      }
+      var retA = [];
+      var idx = 0;
+      var inQuotedString = false;
+      var currentItem = "";
+      var str = self.submitJob().spaceDelimitedCommand();
+      for (var i = 0; i < str.length; i++) {
+          var ch = str.charAt(i);
+          if (ch == "'") {
+              inQuotedString = !inQuotedString;
+              currentItem += "'";
+              if (!inQuotedString) {
+                  retA[idx++] = currentItem;
+                  currentItem = "";
+              }
+          // TODO handle space after double-quote (?)
+          // TODO handle space after single quote (?)
+          } else if (ch == ' ') {
+              if (inQuotedString) {
+                  currentItem += ' ';
+              } else {
+                  if (str.charAt(i-1) == "'") {
+                      retA[idx] = currentItem;
+                  } else {
+                      retA[idx++] = currentItem;
+                  }
+                  currentItem = "";
+              }
+          } else if (ch == '"') {
+              currentItem += '\\' + '"';
+              retA[idx] = currentItem;
+          } else if (ch == '\\') {
+              currentItem += '\\\\';
+              retA[idx] == currentItem;
+          } else {
+              // console.log("got a nice '" + ch + "'");
+              currentItem += ch;
+              retA[idx] = currentItem;
+          }
+      }
+
+      self.submitJob().commandItems(retA);
+      console.log("set commandItems to " + self.submitJob().commandItems());
+      for (var i = 0; i < retA.length; i++) {
+          retA[i] =  '  "' + retA[i] + '"';
+      }
+      var ret = "[\n" + retA.join(",\n") + "\n]";
+      return ret;
+  });
+  // can't do this for some reason(assuming jsonCommandFunc exists):
+  // self.submitJob().jsonCommand = ko.computed(jsonCommandFunc, this);
   self.jobDefinition = ko.observable();
   self.jobDefinitionList = ko.observableArray();
   self.queueList = ko.observableArray();

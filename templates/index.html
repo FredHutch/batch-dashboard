@@ -653,6 +653,8 @@
             <h3>Submit an AWS Batch Job</h3>
             <p>Select a job definition to run and apply any command, parameter, or environment variable overrides.</p>
 
+            <h5>Job run-time</h5>
+
             <table border="0" class="paddingBetweenCols">
               <tr>
                 <td align="right"><b>Job name: </b></td>
@@ -667,7 +669,7 @@
                     data-bind="options: $parent.jobDefinitionList,
                                value: selectedJobDef,
                                optionsCaption: 'Choose one...',
-                               valueAllowUnset: true"
+                               valueAllowUnset: false"
                       data-placeholder="Select a job definition...">
                     </select>
                 </td>
@@ -675,7 +677,11 @@
               <tr>
                 <td align="right"><b>Job Queue: </b></td>
                 <td align="left">
-                    <select id="submit_job_queues" data-bind="options: $parent.queueList"
+                    <select id="submit_job_queues"
+                    data-bind="options: $parent.queueList,
+                               value: selectedQueue,
+                               optionsCaption: 'Choose one...',
+                               valueAllowUnset: false">
                         <option data-bind="text: $data"></option>
                     </select>
                 </td>
@@ -693,13 +699,17 @@
               <tr>
                   <td align="right"><b>Array Size: </b></td>
                   <td align="left">
-                      <input data-bind="value: arraySize" placeholder="Enter a number..."/>
+                      <input data-bind="value: arraySize"
+                      size="30"
+                      placeholder="Enter a number higher than 1"/>
                   </td>
               </tr>
               <tr>
                   <td align="right"><b>N-to-N job dependencies: </b></td>
                   <td align="left">
-                      <input data-bind="value: nToN" placeholder="optional: enter a jobId this will depend on"/>
+                      <input data-bind="value: nToN"
+                      size="40"
+                      placeholder="optional: enter a jobId this will depend on"/>
                   </td>
               </tr>
               <tr>
@@ -712,11 +722,50 @@
 
               <tr>
                   <td align="right"><b>Job Depends On: </b></td>
-                  <td align="left"></td>
+                  <td align="left">
+                      <input data-bind="value: jobDependsOn"
+                      size="40"
+                      placeholder="optional: enter a jobId this will depend on"/>
+                  </td>
               </tr>
 
 
             </table>
+
+            <h4>Environment</h4>
+
+            <table border="0" class="paddingBetweenCols">
+              <tr>
+                <td align="right"><b>Command: </b></td>
+                <td align="left">
+
+                    <ul class="nav nav-tabs">
+                      <li class="active"><a data-toggle="tab" href="#spacedelimited">Space delimited</a></li>
+                      <li><a data-toggle="tab" href="#json">JSON</a></li>
+                    </ul>
+
+                    <div class="tab-content">
+                      <div id="spacedelimited" class="tab-pane fade in active">
+                        <textarea data-bind="value: spaceDelimitedCommand, valueUpdate: 'input'" 
+                        placeholder="space delimited: echo 'hello world'"
+                        rows="3"></textarea>
+
+                        <p>Text is delimited by spaces and converted to a JSON array to be submitted with the job.</p>
+                        <p><b>JSON result:</b></p>
+                        <pre data-bind="text: jsonCommand">
+                        </pre>
+                      </div>
+                      <div id="json" class="tab-pane fade">
+                        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p>For more details on how the command field is used in your job definition, view the
+                  <a href="http://docs.aws.amazon.com/batch/latest/userguide/job_definition_parameters.html#containerProperties">documentation</a>.</p>
+                </td>
+              </tr>
+            </table>
+
 
             <h3>Compute Environments</h3>
 
