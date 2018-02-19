@@ -647,10 +647,9 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="dialog_queue_header">Queue queueName</h4>
+            <h4 class="modal-title" id="dialog_queue_header">Submit an AWS Batch Job</h4>
           </div>
           <div class="modal-body">
-            <h3>Submit an AWS Batch Job</h3>
             <p>Select a job definition to run and apply any command, parameter, or environment variable overrides.</p>
 
             <h5>Job run-time</h5>
@@ -746,7 +745,7 @@
 
                     <div class="tab-content">
                       <div id="spacedelimited" class="tab-pane fade in active">
-                        <textarea data-bind="value: spaceDelimitedCommand, valueUpdate: 'input'" 
+                        <textarea data-bind="value: spaceDelimitedCommand, valueUpdate: 'input'"
                         placeholder="space delimited: echo 'hello world'"
                         rows="3"></textarea>
 
@@ -761,7 +760,7 @@
                     </div>
                   </div>
                   <p>For more details on how the command field is used in your job definition, view the
-                  <a href="http://docs.aws.amazon.com/batch/latest/userguide/job_definition_parameters.html#containerProperties">documentation</a>.</p>
+                  <a target="_blank" href="http://docs.aws.amazon.com/batch/latest/userguide/job_definition_parameters.html#containerProperties">documentation</a>.</p>
                 </td>
               </tr>
             </table>
