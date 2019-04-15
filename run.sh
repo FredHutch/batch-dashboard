@@ -1,9 +1,6 @@
 #!/bin/bash
 
 
-ls -l /run/secrets/
-
-ls -l /run/
 
 APP_SECRET=$(cat /run/secrets/BATCH_DASHBOARD_APP_SECRET)
 export APP_SECRET
@@ -15,10 +12,5 @@ AWS_DEFAULT_REGION=$(cat /run/secrets/BATCH_DASHBOARD_AWS_REGION)
 export AWS_DEFAULT_REGION
 
 VENV=$(pipenv --venv)
-
-echo VENV is $VENV
-
-ls -l $VENV/bin/gunicorn
-
 
 "$VENV/bin/gunicorn" app_namespace:APP --timeout 120 -w 4 -b 0.0.0.0:8001
