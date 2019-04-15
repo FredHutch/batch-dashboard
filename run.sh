@@ -1,6 +1,10 @@
 #!/bin/bash
 
 
+ls -l /run/secrets/
+
+ls -l /run/
+
 APP_SECRET=$(cat /run/secrets/BATCH_DASHBOARD_APP_SECRET)
 export APP_SECRET
 AWS_ACCESS_KEY_ID=$(cat /run/secrets/BATCH_DASHBOARD_AWS_ACCESS_KEY_ID)
