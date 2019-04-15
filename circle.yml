@@ -24,4 +24,4 @@ deployment:
     commands:
       - docker tag $DOCKER_HUB_HOST/$DOCKER_USER/batch-dashboard:$CIRCLE_SHA1 $DOCKER_HUB_HOST/$DOCKER_USER/batch-dashboard:latest
       - docker login -e fredhutch@fhcrc.org -u $DOCKER_USER -p "$DOCKER_PASS" $DOCKER_HUB_HOST && docker push $DOCKER_HUB_HOST/$DOCKER_USER/batch-dashboard:latest
-      - rancher-v0.6.2/rancher --url https://ponderosa.fhcrc.org --access-key $RANCHERAPI_KEY --secret-key $RANCHERAPI_SECRET up -d --pull --force-upgrade --confirm-upgrade --stack batch-dashboard --file docker-compose.yml --rancher-file rancher-compose.yml
+      - rancher-v0.6.2/rancher --url https://ponderosa.fhcrc.org --access-key $RANCHERAPI_ACCESSKEY --secret-key $RANCHERAPI_SECRETKEY up -d --pull --force-upgrade --confirm-upgrade --stack batch-dashboard --file docker-compose.yml --rancher-file rancher-compose.yml
