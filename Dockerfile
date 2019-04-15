@@ -11,9 +11,6 @@ RUN apt-get install -y python3.6
 
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 
-COPY . /app/
-
-WORKDIR /app
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -28,6 +25,9 @@ RUN pipenv install
 
 EXPOSE 8001
 
+COPY . /app/
+
+WORKDIR /app
 
 
 CMD ./run.sh
