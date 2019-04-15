@@ -12,6 +12,7 @@ services:
       - "8001"
     labels:
       io.rancher.container.pull_image: always
+      
 secrets:
   BATCH_DASHBOARD_AWS_ACCESS_KEY:
     external: true
