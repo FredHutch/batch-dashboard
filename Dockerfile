@@ -5,7 +5,14 @@ ARG AWS_ACCESS_KEY_ID
 ARG AWS_SECRET_ACCESS_KEY
 ARG AWS_DEFAULT_REGION
 
-
+# We are writing a secret into the docker image! This is probably not the greatest
+# thing ever. However, we are storing the image in a private repo and it will only
+# be used in places that are under our control.
+# TODO - Fix rancher secrets so this will no longer be necessary.
+ARG APP_SECRET
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+ARG AWS_DEFAULT_REGION
 RUN env
 RUN exit 1
 
