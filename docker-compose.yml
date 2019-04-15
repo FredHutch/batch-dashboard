@@ -3,16 +3,19 @@ services:
   batch-dashboard:
     image: dockerimages.fhcrc.org/fredhutch/batch-dashboard:latest
     stdin_open: true
+    ports:
+      - "8001"
+    labels:
+      io.rancher.container.pull_image: always
+
+    restart: always
+
     secrets:
     - BATCH_DASHBOARD_AWS_ACCESS_KEY
     - BATCH_DASHBOARD_AWS_REGION
     - BATCH_DASHBOARD_SECRET_KEY
     - BATCH_DASHBOARD_APP_SECRET
-    ports:
-      - "8001"
-    labels:
-      io.rancher.container.pull_image: always
-      
+
 secrets:
   BATCH_DASHBOARD_AWS_ACCESS_KEY:
     external: true

@@ -2,4 +2,4 @@ version: '2'
 services:
   batch-dashboard:
     scale: 1
-start_on_create: true
+    start_on_create: true
