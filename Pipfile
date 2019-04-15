@@ -21,6 +21,7 @@ Flask-RESTful = "*"
 Flask-HTTPAuth = "*"
 requests = "*"
 urllib3 = "*"
+Jinja2 = ">=2.10.1"
 
 [dev-packages]
 pylint = "*"
