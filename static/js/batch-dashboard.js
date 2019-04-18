@@ -95,13 +95,17 @@ $(document).ready(function () {
             return null
           }
           return moment(data).format("MM-DD-YYYY hh:mm a");
-          //moment('2016-01-01 11:31:23 PM', 'hh:mm:ss a MM/DD/YYYY')
-
-
-          // return fn.dataTable.render.moment(new Date(data), 'Do MMM YYYYY')
-          // return new Date(data); // format: 08:45:24 am 04/10/19
         },
-        targets: [4,5]
+        targets: [4, 5]
+      },
+      {
+        "render": function (data, type, row) {
+          if (data == null) {
+            return null
+          }
+          return jQuery.timeago(data).replace(" ago", "").replace("about ", "");
+        },
+        targets: 6
       }
     ],
     dom: 'Bfrtip',

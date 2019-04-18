@@ -1,6 +1,7 @@
 "utilities"
 
 import datetime
+import time
 
 import boto3
 
@@ -17,6 +18,12 @@ STATES = [
 
 BATCH = boto3.client("batch")
 
+
+
+def unix_time_millis(dt):
+    "convert datetime to milliseconds"
+    epoch = datetime.datetime.fromtimestamp(0)
+    return int((dt - epoch).total_seconds() * 1000.0)
 
 def get_all_job_info():
     "get a list of all jobs on all queues in all states"
@@ -99,6 +106,14 @@ def get_job_table(info):
                 row.append(job["createdAt"])
                 if "startedAt" in job:
                     row.append(job["startedAt"])
+                else:
+                    row.append(None)
+                if "stoppedAt" in job and "startedAt" in job:
+                    delta = job['stoppedAt'] - job['startedAt']
+                    now = datetime.datetime.now()
+                    nowint = unix_time_millis(now)
+                    row.append(nowint - delta)
+                    # row.append('dante')
                 else:
                     row.append(None)
                 out.append(row)
