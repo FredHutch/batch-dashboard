@@ -19,11 +19,11 @@ STATES = [
 BATCH = boto3.client("batch")
 
 
-
 def unix_time_millis(dt):
     "convert datetime to milliseconds"
     epoch = datetime.datetime.fromtimestamp(0)
     return int((dt - epoch).total_seconds() * 1000.0)
+
 
 def get_all_job_info():
     "get a list of all jobs on all queues in all states"
@@ -109,7 +109,7 @@ def get_job_table(info):
                 else:
                     row.append(None)
                 if "stoppedAt" in job and "startedAt" in job:
-                    delta = job['stoppedAt'] - job['startedAt']
+                    delta = job["stoppedAt"] - job["startedAt"]
                     now = datetime.datetime.now()
                     nowint = unix_time_millis(now)
                     row.append(nowint - delta)
@@ -177,7 +177,10 @@ def describe_job_definition(jobdef_id):
     "get info for one revision of a job definition"
     jobdef, revision = jobdef_id.split(":")
     revision = int(revision)
-    defs = BATCH.describe_job_definitions(jobDefinitionName=jobdef)["jobDefinitions"]
+    # NOTE: This is super slow thanks to cromwell which makes 1000s of revisions....
+    # Not sure what to do....
+    # Do we at least get a progress indicator?
+    defs = do_paginated_batch_operation("describe_job_definitions", "jobDefinitions")
     return [x for x in defs if x["revision"] == revision][0]
 
 
