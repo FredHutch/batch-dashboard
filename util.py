@@ -186,6 +186,10 @@ def describe_job_definition(jobdef_id):
 
 def get_log_events(job_id, attempt, next_token, start_from_head):
     "get log events & timestamps for one job"
+    proxy = False
+    if job_id.endswith("-proxy"):
+        proxy = True
+        job_id = job_id.replace("-proxy", "")
     job = BATCH.describe_jobs(jobs=[job_id])["jobs"][0]
     retdict = {
         "jobId": job["jobId"],
@@ -198,6 +202,8 @@ def get_log_events(job_id, attempt, next_token, start_from_head):
         log_stream_name = job["attempts"][attempt]["container"]["logStreamName"]
     else:
         log_stream_name = job["container"]["logStreamName"]
+    if proxy:
+        log_stream_name = log_stream_name + "-proxy"
     client = boto3.client("logs")
     output = []
     args = dict(
