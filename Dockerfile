@@ -1,12 +1,12 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 RUN apt-get update -y
 
-RUN apt-get update -y && apt-get install -y locales git vim software-properties-common python-software-properties curl
+RUN apt-get update -y && apt-get install -y locales git vim software-properties-common software-properties-common curl python3-pip
 
-RUN add-apt-repository -y ppa:jonathonf/python-3.6
-RUN apt-get update -y
-RUN apt-get install -y python3.6
+# RUN add-apt-repository -y ppa:jonathonf/python-3.6
+# RUN apt-get update -y
+# RUN apt-get install -y python3.6
 
 
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
