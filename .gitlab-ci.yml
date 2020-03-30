@@ -1,25 +1,25 @@
 
 before_script:
-    - curl -LO https://releases.rancher.com/cli/v0.6.2/rancher-linux-amd64-v0.6.2.tar.gz
-    - tar zxf rancher-linux-amd64-v0.6.2.tar.gz
+  - curl -LO https://releases.rancher.com/cli/v0.6.2/rancher-linux-amd64-v0.6.2.tar.gz
+  - tar zxf rancher-linux-amd64-v0.6.2.tar.gz
   
-  build_test:
-    script:
-      - docker build -t dockerimages.fhcrc.org/batch-dashboard:latest .
-      - |
-          if docker ps -a|tr -s ' '|rev|cut -d ' ' -f 1|rev|grep -q batch-dashboard
-          then
-            docker stop batch-dashboard && docker rm --force batch-dashboard
-          fi
-      - docker run -d --name batch-dashboard -p 8001:8001 dockerimages.fhcrc.org/batch-dashboard:latest
-      - sleep 15 && curl -sI  http://localhost:8001  |head -1|grep -q "200 OK"
-      - docker stop batch-dashboard && docker rm --force batch-dashboard
+build_test:
+  script:
+    - docker build -t dockerimages.fhcrc.org/batch-dashboard:latest .
+    - |
+        if docker ps -a|tr -s ' '|rev|cut -d ' ' -f 1|rev|grep -q batch-dashboard
+        then
+        docker stop batch-dashboard && docker rm --force batch-dashboard
+        fi
+    - docker run -d --name batch-dashboard -p 8001:8001 dockerimages.fhcrc.org/batch-dashboard:latest
+    - sleep 15 && curl -sI  http://localhost:8001  |head -1|grep -q "200 OK"
+    - docker stop batch-dashboard && docker rm --force batch-dashboard
   
   
-  deploy:
+deploy:
     only:
-      refs:
-          - master
+        refs:
+            - master
     script:
       - docker login --username $DOCKERIMAGES_USER --password $DOCKERIMAGES_PASS https://dockerimages.fhcrc.org
       - docker push dockerimages.fhcrc.org/batch-dashboard:latest
