@@ -13,4 +13,4 @@ export AWS_DEFAULT_REGION
 
 VENV=$(pipenv --venv)
 
-"$VENV/bin/gunicorn" app_namespace:APP --timeout 120 -w 4 -b 0.0.0.0:8001
+"$VENV/bin/gunicorn" app_namespace:APP --timeout 480 -w 4 -b 0.0.0.0:8001
