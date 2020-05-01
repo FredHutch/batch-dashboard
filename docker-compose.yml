@@ -1,7 +1,7 @@
 version: '2'
 services:
   batch-dashboard:
-    image: dockerimages.fhcrc.org/fredhutch/batch-dashboard:latest
+    image: dockerimages.fhcrc.org/batch-dashboard:latest
     stdin_open: true
     ports:
       - "8001"
