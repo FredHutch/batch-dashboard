@@ -191,16 +191,7 @@ def get_job_definition_table(maxResults=20, nextToken=None):
     jobdefs = sorted(
         jobdefs, key=lambda x: (x["jobDefinitionName"].lower(), -x["revision"])
     )
-    out = []
-    for jobdef in jobdefs:
-        row = []
-        row.append(jobdef["jobDefinitionName"])
-        row.append(jobdef["revision"])
-        row.append(jobdef["containerProperties"]["vcpus"])
-        row.append(jobdef["containerProperties"]["memory"])
-        row.append(jobdef["containerProperties"]["image"])
-        out.append(row)
-    return dict(data=out, nextToken=res['nextToken'])
+    return dict(data=jobdefs, nextToken=res['nextToken'])
 
 
 # def do_paginated_batch_operation(operation, wanted_part, args=None):

@@ -17,6 +17,7 @@
 <script type="text/javascript">
 
 var jdStack = [''];
+var jdModels = {};
 
 Object.defineProperty(String.prototype, 'hashCode', {
   value: function() {
@@ -57,6 +58,20 @@ $(function() {
     return shortStack;
   }
 
+  var getJobDefRows = function() {
+    var rows = [];
+    for (let jobdef of jdModels) {
+      var row = [];
+      row.push(jobdef["jobDefinitionName"])
+      row.push(jobdef["revision"])
+      row.push(jobdef["containerProperties"]["vcpus"])
+      row.push(jobdef["containerProperties"]["memory"])
+      row.push(jobdef["containerProperties"]["image"])
+      rows.push(row);
+    }
+    return rows;
+  }
+
   var populateJobDefTable = function(clickedOnNext=true) {
     console.log("populating, clickedOnNext = " + clickedOnNext);
     console.log("stack length is "+ jdStack.length);
@@ -79,9 +94,12 @@ $(function() {
         }
         console.log("in success, shortStack is " + getShortStack());
 
+        jdModels = data['data'];
+        rows = getJobDefRows();
+
         // first delete rows
         jobDefTable.rows().remove();
-        jobDefTable.rows.add(data['data']).draw();
+        jobDefTable.rows.add(rows).draw();
       }
     });
   }
@@ -100,6 +118,20 @@ $(function() {
     populateJobDefTable();
   });
 
+  var getFullJobDef = function(jobDefId) {
+    var tmp = jobDefId.split(":");
+    var id = tmp[0];
+    var revision = tmp[1];
+    for (let jobDef of jdModels) {
+      if (jobDef['jobDefinitionName'] == id && jobDef['revision'] == revision) {
+        console.log("found");
+        console.log(jobDef);
+        return jobDef;
+      }
+    }
+    console.log("did not find job def");
+    return null;
+  }
 
 
   // click event handler for job definition table
@@ -108,30 +140,8 @@ $(function() {
     clearTables();
     var id = $(event.target).attr('id');
     console.log("id is " + id);
-    // TODO put up some kind of progress indicator
-    // and remove it in the "done" callback
-    // because this is SLOW and may not even work
-    // when deployed on rancher.
-    // Or, we could just make the job defs non-clickable.
-    $("#wait_modal").modal();
-
-    $.getJSON("/describe_job_definition", { jobdef_id: id })
-      .done(function (obj) {
-        console.log("got it...");
-        $("#wait_modal").modal('hide');
-        // $("#wait_modal").on('hidden.bs.modal', function () {
-        //   $(this).data('bs.modal', null);
-        // });        
-        populateJobDefDialog(obj);
-      })
-      .fail(function (jqxhr, textStatus, error) {
-        console.log("Request Failed: " + err);
-        $("#wait_modal").modal('hide');
-        // $("#wait_modal").on('hidden.bs.modal', function () {
-        //  $(this).data('bs.modal', null);
-        // });        
-        var err = textStatus + ", " + error;
-      });
+    var obj = getFullJobDef(id);
+    populateJobDefDialog(obj);
   }); // end of click event handler for job definition table
 
 
@@ -144,7 +154,8 @@ $(function() {
     $("#dialog_jobdef_arn").html(obj['"jobDefinitionArn"']);
     $("#dialog_jobdef_status").html(obj["status"]);
     var containerProperties = obj['containerProperties'];
-    console.log("containerProperties is " + containerProperties);
+    console.log("containerProperties is ");
+    console.log(containerProperties);
     if (containerProperties.hasOwnProperty("jobRoleArn")) {
       $("#dialog_jobdef_jobrolearn").html(containerProperties["jobRoleArn"]);
     }
@@ -173,7 +184,7 @@ $(function() {
     }
 
     // environment variables
-    containerProperties['environment'].map(function item() {
+    containerProperties['environment'].map(function(item) {
       var html = "<tr>\n";
       html += "<td align='right'><b>" + item['name'] + "</b></td>\n";
       html += "<td align='left' class='breakMe'>" + item['value'] + "</td>\n";
@@ -204,14 +215,19 @@ $(function() {
 
     //mount points
     containerProperties['mountPoints'].map(function (item) {
+      console.log("item is");
+      console.log(item);
       var html = "<tr>\n";
       html += "<td>" + item['containerPath'] + "</td>\n";
       html += "<td>" + item['sourceVolume'] + "</td>\n";
+      // TODO FIXME vvv readOnly (sometimes?) shows as undefined
       html += "<td>" + item['readOnly'] + "</td>\n";
       $("#dialog_jobdef_mountpoints").append(html);
     });
 
+    console.log("about to show dialog");
     $("#jobdef_dialog").modal();
+    console.log("showed dialog");
 
 
   }
