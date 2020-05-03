@@ -16,8 +16,252 @@
 <script type="text/javascript" charset="utf8" src="/js/common.js"></script>
 <script type="text/javascript">
   $(function() {
-    $("#job_table").DataTable();
-  });
+    var jobTable = $("#job_table").DataTable({
+    // "ajax": "/get_job_table_data",
+    "columnDefs": [
+      {
+        "render": function (data, type, row) {
+          return '<a id="' + data + '" class="job_id">' + data + '</a>'
+        },
+        targets: 1
+      },
+      {
+        "render": function (data, type, row) {
+          if (data == null) {
+            return null
+          }
+          return moment(data).format("MM-DD-YYYY hh:mm a");
+        },
+        targets: [4, 5]
+      },
+      {
+        "render": function (data, type, row) {
+          if (data == null) {
+            return null
+          }
+          return jQuery.timeago(data).replace(" ago", "").replace("about ", "");
+        },
+        targets: 6
+      }
+    ],
+    dom: 'Bfrtip',
+    buttons: [
+      {
+        extend: 'copyHtml5',
+        title: null,
+        text: 'Copy to clipboard'
+      }
+    ]
+  });  
+
+
+  var getRunTime = function(data) {
+    if (!data.hasOwnProperty('startedAt')) {
+      return null;
+    }
+    if (!data.hasOwnProperty('stoppedAt')) {
+      return null;
+    }
+    var startedAt = new Date(data['startedAt']);
+    var stoppedAt = new Date(data['stoppedAt']);
+
+    var now = new Date()
+    var delta =  stoppedAt - startedAt;
+    return new Date (now - delta);
+  }
+
+  $("#job_id_search_button").on('click', function(event) {
+    console.log("haha");
+    console.log($("#job_id_search").val());
+    $.getJSON(
+      "/describe_job?job_id=" + $("#job_id_search").val(),
+      function(data) {
+        console.log("oh yeah, data is");
+        console.log(data);
+        var qshort = data['jobQueue'].split("/")[1];
+        $("#queue_dropdown").val(qshort);
+        var model = [
+          qshort,
+          data['jobId'],
+          data['jobName'],
+          data['status'],
+          new Date(data['createdAt']),
+          data.hasOwnProperty('startedAt') ? new Date(data['startedAt']) : null,
+          getRunTime(data)
+        ];
+        console.log("model is ");
+        console.log(model);
+        jobTable.rows().remove();
+        jobTable.rows.add([model]).draw();
+        populateJobDialog(data);
+      },
+
+    ).fail(function() {
+      console.log("failed");
+      alert("No job with that ID.");
+    }); // end fail
+
+  }); // end job search button click handler
+
+  // click event handler for job table
+  $('#job_table').on('click', '.job_id', function (event) {
+    console.log("in click handler for job table");
+    clearTables();
+    var id = $(event.target).attr('id');
+    $.getJSON("/describe_job", { job_id: id })
+      .done(function (obj) {
+        // console.log( "JSON Data: " +obj );
+        // console.log(JSON.stringify(obj));
+        populateJobDialog(obj);
+      })
+      .fail(function (jqxhr, textStatus, error) {
+        var err = textStatus + ", " + error;
+        console.log("Request Failed: " + err);
+      });
+  }); // end of click event handler for job table
+
+  var populateJobDialog = function (obj) {
+    // job status
+    $("#array_job_details").hide();
+    $("#displaying_child_job").hide();
+    if (obj.hasOwnProperty('arrayProperties')) {
+      if (obj['arrayProperties'].hasOwnProperty('size')) {
+        // this is an array parent job
+
+        var td = "#" + "child_" + obj['status'].toLowerCase() + "_count";
+        $(".child_count").css("border", "0");
+        $(td).css("border", "1px solid black");
+
+        $("#array_job_details").show();
+        updateChildInfo(obj);
+      } else if (obj['arrayProperties'].hasOwnProperty('index')) {
+        // this is an array child job
+        $("#displaying_child_job").show();
+
+      }
+    }
+    $("#dialog_job_status").html(obj['status']);
+    if (obj.hasOwnProperty('statusReason')) {
+      $("#dialog_job_status_reason").html(obj['statusReason']);
+    }
+    if (obj['container'].hasOwnProperty('reason')) {
+      $("#dialog_job_container_message").html(obj['container'['reason']]);
+    }
+    $("#dialog_job_createdat").html(new Date(obj['createdAt']));
+    if (obj.hasOwnProperty('startedAt')) {
+      $("#dialog_job_startedat").html(new Date(obj['startedAt']));
+    }
+    $("#dialog_job_queue").html(obj['jobQueue'].split("/").pop());
+
+    // job attributes
+    $("#dialog_job_id").html(obj['jobId']);
+    $("#dialog_job_name").html(obj['jobName']);
+    $("#dialog_job_jobdef").html(obj['jobDefinition'].split("/").pop());
+    if (obj.hasOwnProperty('dependsOn')) {
+      var html = "";
+      var jobs = [];
+      obj['dependsOn'].map(function (item) {
+        var row = item['jobId'];
+        if (item.hasOwnProperty('type')) {
+          row += " (" + item['type'] + ")";
+        }
+        jobs.push(row);
+      });
+      html = jobs.join(", ");
+      $("#dialog_job_dependson").html(html);
+    }
+
+    // attempts
+    obj['attempts'].map(function (item, index) {
+      var html = "<tr>\n";
+      html += "<td>" + (index + 1) + "of " + obj['attempts'].length + "</td>\n";
+      console.log("lsn = " + item['container']['logStreamName']);
+      html += "<td><a target='_blank' href='/job_log?jobId=" + obj['jobId'] + "&attempt=" + index + "'>View logs</a></td>\n";
+      html += "<td>" + new Date(item['startedAt']) + "</td>\n";
+      html += "<td>" + new Date(item['stoppedAt']) + "</td>\n";
+      html += "</tr>";
+      $("#dialog_job_attempts").append(html);
+    });
+
+    // resource requirements
+    $("#dialog_job_role").html(obj['container']['jobRoleArn']);
+    $("#dialog_job_containerimage").html(obj['container']['image']);
+
+    // environment
+    $("#dialog_job_command").html(obj['container']['command'].join(", "));
+    $("#dialog_job_vcpus").html(obj['container']['vcpus']);
+    $("#dialog_job_memory").html(obj['container']['memory'] + " MiB");
+
+
+    // environment variables
+    obj['container']['environment'].map(function (item) {
+      var html = "<tr>\n";
+      html += "<td align='right'><b>" + item['name'] + "</b></td>\n";
+      html += "<td align='left' class='breakMe'>" + item['value'] + "</td>\n";
+      html += "</tr>\n"
+      $("#dialog_job_envvars").append(html);
+    });
+
+    // parameters
+    for (var key in obj['parameters']) {
+      var value = obj['parameters'][key];
+      var html = "<tr>\n";
+      html += "<td align='right'><b>" + key + "</b></td>\n";
+      html += "<td align='left' class='breakMe'>" + value + "</td>\n";
+      html += "</tr>\n"
+      $("#dialog_job_parameters").append(html);
+    }
+
+    //ulimits
+    obj['container']['ulimits'].map(function (item) {
+      var html = "<tr>\n";
+      html += "<td>" + item['name'] + "</td>\n";
+      html += "<td>" + item['softLimit'] + "</td>\n";
+      html += "<td>" + item['hardLimit'] + "</td>\n";
+      html += "</tr>\n";
+      $("#dialog_job_ulimits").append(html);
+    });
+
+    //volumes
+    obj['container']['volumes'].map(function (item) {
+      var html = "<tr>\n";
+      html += "<td>" + item['name'] + "</td>\n";
+      html += "<td>" + item['host']['sourcePath'] + "</td>\n";
+      html += "</tr>\n";
+      $("#dialog_job_volumes").append(html);
+    });
+
+    //mount points
+    obj['container']['mountPoints'].map(function (item) {
+      var html = "<tr>\n";
+      html += "<td>" + item['containerPath'] + "</td>\n";
+      html += "<td>" + item['sourceVolume'] + "</td>\n";
+      html += "<td>" + item['readOnly'] + "</td>\n";
+      $("#dialog_job_mountpoints").append(html);
+    });
+
+    if (obj['container'].hasOwnProperty('logStreamName')) {
+      var attempt = obj['attempts'].length - 1;
+      var jobId = obj['jobId'];
+      $("#dialog_job_log_link").html("<a target='_blank' href='/job_log?jobId=" + jobId + "&attempt=" + attempt + "'>View logs for the most recent attempt in the CloudWatch console</a>");
+    } else {
+      if (obj.hasOwnProperty('arrayProperties') && obj['arrayProperties'].hasOwnProperty('size')) {
+        $("#dialog_job_log_link").html("Select an individual child job and view its logs.");
+      } else {
+        $("#dialog_job_log_link").html("Only visible if job has been in <B>RUNNING</B> state.");
+      }
+
+    }
+
+    $("#job_dialog").modal();
+
+
+  }
+
+
+
+}); // end ready function
+
 </script>
 {% endblock %}
 {% block content %}
@@ -40,6 +284,16 @@
   <input id="job_id_search" placeholder="Search by Job ID" size="50"></input>
   <button id="job_id_search_button" type="button" class="btn btn-primary">Search</button>
 </div>
+
+<div>
+  <label for="queue_dropdown">Queues</label>
+  <select id="queue_dropdown">
+    {% for queue in queues %}
+      <option value="{{queue}}">{{queue}}</option>
+    {% endfor %}
+  </select>
+</div>
+
 <!--
 <div style="float: right; padding: 5px;">
   <img id="reload_job_table" src="/images/refresh.png" height="30" width="30" title="reload data" />

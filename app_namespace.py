@@ -58,7 +58,7 @@ def envs():
 def jobs():
     "show jobs"
     return render_template("jobs.html",
-                           queues=util.get_job_queue_names,
+                           queues=util.get_job_queue_names(),
                            states=util.STATES)
 
 @APP.route("/defs")
