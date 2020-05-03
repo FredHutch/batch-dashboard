@@ -1,0 +1,274 @@
+{% extends "layout.html" %}
+{% block title %}Job Definitions - Dashboard{% endblock %}
+{% block pagejs %}
+<script type="text/javascript" charset="utf8" src="/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/buttons.flash.min.js"></script>
+<script type="text/javascript" charset="utf8"
+  src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script type="text/javascript" charset="utf8"
+  src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
+<script type="text/javascript" charset="utf8"
+  src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/buttons.html5.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/buttons.print.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/buttons.bootstrap.js"></script>
+<!-- FIXME eventually remove the timestamp bit from here: -->
+<script type="text/javascript" charset="utf8" src="/js/common.js"></script>
+<script type="text/javascript">
+
+var nextToken = '';
+var previousToken = '';
+
+Object.defineProperty(String.prototype, 'hashCode', {
+  value: function() {
+    var hash = 0, i, chr;
+    for (i = 0; i < this.length; i++) {
+      chr   = this.charCodeAt(i);
+      hash  = ((hash << 5) - hash) + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
+  }
+});
+
+$(function() {
+
+    var jobDefTable = $("#job_def_table").DataTable(
+    {
+      // "ajax": "/get_jobdef_table_data",
+      "searching": false,
+      // "pagingType": "simple",
+      "paging": false,
+      "pageLength": 20,
+      "columnDefs": [
+        {
+          "render": function (data, type, row) {
+            return '<a class="jobdef" id="' + row[0] + ':' + row[1] + '">' + data + '</a>'
+          },
+          targets: 0
+        }
+      ]
+    });
+    
+  
+  var populateJobDefTable = function(clickedOnNext=true) {
+    console.log("populating, clickedOnNext = " + clickedOnNext);
+    if ((!clickedOnNext) && previousToken.hashCode() == 0) {
+      console.log("cant go back that far");
+      return;
+    }
+    url = "/get_jobdef_table_data?nextToken=" 
+    var token = clickedOnNext ? nextToken : previousToken;
+    token = token.replace(/\+/g, "%2b");
+    url += token;
+    jQuery.getJSON({
+      url: url,
+      success: function(data) {
+        if (clickedOnNext) {
+          previousToken = nextToken;
+          nextToken = data['nextToken']; // TODO what if user clicked previous?
+        } else {
+          nextToken = previousToken;
+          previousToken = data['nextToken'];
+        }
+        console.log("previousToken: " + previousToken.hashCode());
+        console.log("    nextToken: " + nextToken.hashCode());
+
+        // first delete rows
+        jobDefTable.rows().remove();
+        jobDefTable.rows.add(data['data']).draw();
+      }
+    });
+  }
+
+  populateJobDefTable();
+
+  //click event handler for previous button
+  $(".previous_button").on('click', function(event){
+    console.log("you clicked previous");
+    populateJobDefTable(false);
+  });
+
+  //click event handler for next button
+  $(".next_button").on('click', function(event){
+    console.log("you clicked next");
+    populateJobDefTable();
+  });
+
+
+
+  // click event handler for job definition table
+  $('#job_def_table').on('click', '.jobdef', function (event) {
+    console.log("in click handler for job definition table");
+    clearTables();
+    var id = $(event.target).attr('id');
+    console.log("id is " + id);
+    // TODO put up some kind of progress indicator
+    // and remove it in the "done" callback
+    // because this is SLOW and may not even work
+    // when deployed on rancher.
+    // Or, we could just make the job defs non-clickable.
+    $("#wait_modal").modal();
+
+    $.getJSON("/describe_job_definition", { jobdef_id: id })
+      .done(function (obj) {
+        console.log("got it...");
+        $("#wait_modal").modal('hide');
+        // $("#wait_modal").on('hidden.bs.modal', function () {
+        //   $(this).data('bs.modal', null);
+        // });        
+        populateJobDefDialog(obj);
+      })
+      .fail(function (jqxhr, textStatus, error) {
+        console.log("Request Failed: " + err);
+        $("#wait_modal").modal('hide');
+        // $("#wait_modal").on('hidden.bs.modal', function () {
+        //  $(this).data('bs.modal', null);
+        // });        
+        var err = textStatus + ", " + error;
+      });
+  }); // end of click event handler for job definition table
+
+
+  var populateJobDefDialog = function (obj) {
+    // job status
+    var nameRevision = obj["jobDefinitionName"] + ":" + obj['revision'];
+    $("#dialog_jobdef_header").html(nameRevision);
+    $("#dialog_jobdef_namerevision").html(nameRevision);
+    $("#dialog_jobdef_arn").html(obj["jobDefinitionArn"]);
+    $("#dialog_jobdef_arn").html(obj['"jobDefinitionArn"']);
+    $("#dialog_jobdef_status").html(obj["status"]);
+    var containerProperties = obj['containerProperties'];
+    console.log("containerProperties is " + containerProperties);
+    if (containerProperties.hasOwnProperty("jobRoleArn")) {
+      $("#dialog_jobdef_jobrolearn").html(containerProperties["jobRoleArn"]);
+    }
+    $("#dialog_jobdef_image").html(containerProperties["image"]);
+    $("#dialog_jobdef_command").html(containerProperties['command'].join(", "));
+    $("#dialog_jobdef_vcpus").html(containerProperties['vcpus']);
+    $("#dialog_jobdef_memory").html(containerProperties['memory']);
+
+
+
+    // attempts
+    if (!obj.hasOwnProperty('retryStrategy')) {
+      obj['retryStrategy'] = { attempts: 1 };
+    }
+    $("#dialog_jobdef_attempts").html(obj['retryStrategy']['attempts']);
+
+
+    // parameters
+    for (var key in obj['parameters']) {
+      var value = obj['parameters'][key];
+      var html = "<tr>\n";
+      html += "<td align='right'><b>" + key + "</b></td>\n";
+      html += "<td align='left' class='breakMe'>" + value + "</td>\n";
+      html += "</tr>\n"
+      $("#dialog_jobdef_parameters").append(html);
+    }
+
+    // environment variables
+    containerProperties['environment'].map(function item() {
+      var html = "<tr>\n";
+      html += "<td align='right'><b>" + item['name'] + "</b></td>\n";
+      html += "<td align='left' class='breakMe'>" + item['value'] + "</td>\n";
+      html += "</tr>\n"
+      $("#dialog_jobdef_envvars").append(html);
+    });
+
+
+    //ulimits
+    containerProperties['ulimits'].map(function (item) {
+      var html = "<tr>\n";
+      html += "<td>" + item['name'] + "</td>\n";
+      html += "<td>" + item['softLimit'] + "</td>\n";
+      html += "<td>" + item['hardLimit'] + "</td>\n";
+      html += "</tr>\n";
+      $("#dialog_jobdef_ulimits").append(html);
+    });
+
+
+    //volumes
+    containerProperties['volumes'].map(function (item) {
+      var html = "<tr>\n";
+      html += "<td>" + item['name'] + "</td>\n";
+      html += "<td>" + item['host']['sourcePath'] + "</td>\n";
+      html += "</tr>\n";
+      $("#dialog_jobdef_volumes").append(html);
+    });
+
+    //mount points
+    containerProperties['mountPoints'].map(function (item) {
+      var html = "<tr>\n";
+      html += "<td>" + item['containerPath'] + "</td>\n";
+      html += "<td>" + item['sourceVolume'] + "</td>\n";
+      html += "<td>" + item['readOnly'] + "</td>\n";
+      $("#dialog_jobdef_mountpoints").append(html);
+    });
+
+    $("#jobdef_dialog").modal();
+
+
+  }
+
+
+  });
+</script>
+
+{% endblock %}
+{% block content %}
+
+
+<!-- default value for display is 'inline' -->
+<button id="myButton" style="display: none;">pressme</button>
+
+<div id="message"
+  style="z-index: 9999; position : fixed; top: 0; right: 20%; padding: 5px 0 0 5px; height: 140px; width: 300px;">
+  <div id="inner-message" style="display: none;" class="alert alert-info">
+  </div>
+</div>
+
+
+
+<h2 id="job_def_header">Job Definitions</h2>
+
+<!-- <div style="float: right; padding: 5px;">
+  <img id="reload_jobdef_table" src="/images/refresh.png" height="30" width="30" title="reload data" />
+</div> -->
+
+
+<div>
+  <button type="button" class="btn btn-info previous_button">Previous</button>
+  <button type="button" class="btn btn-info next_button">Next</button>
+</div>
+
+
+<table id="job_def_table" class="display" style="float: none">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Revision</th>
+      <th>vCPUs</th>
+      <th>Memory</th>
+      <th>Image</th>
+    </tr>
+  </thead>
+</table>
+
+<div>
+  <button type="button" class="btn btn-info previous_button">Previous</button>
+  <button type="button" class="btn btn-info next_button">Next</button>
+</div>
+
+
+<div id="log" style="display: none;"></div>
+
+<p>&nbsp;</p>
+
+<p>
+  <a target="_blank" href="https://fredhutch.github.io/aws-batch-at-hutch-docs/">[Documentation for AWS Batch at Fred
+    Hutch]</a> |
+  <a target="_blank" href="https://github.com/FredHutch/batch-dashboard">[Code/Report an Issue]</a>
+</p>
+
+{% endblock %}

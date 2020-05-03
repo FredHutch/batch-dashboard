@@ -30,13 +30,41 @@ if NOTSET:
 
 APP.config['SECRET_KEY'] = os.getenv('APP_SECRET')
 
-@APP.route('/')
-def index():
-    "main route"
+# @APP.route('/')
+# def index():
+#     "main route"
+#     timestamp = datetime.datetime.now().isoformat()
+#     return render_template('index.html',
+#                            timestamp=timestamp,
+#                            states=util.STATES)
+
+@APP.route("/")
+def index2():
+    "dev route"
     timestamp = datetime.datetime.now().isoformat()
     return render_template('index.html',
                            timestamp=timestamp,
+                           states=util.STATES,
+                           qinfo=util.get_all_job_info())
+
+
+@APP.route("/envs")
+def envs():
+    "show compute environments"
+    return render_template("envs.html",
+                           envs=util.get_compute_environment_table())
+
+@APP.route("/jobs")
+def jobs():
+    "show jobs"
+    return render_template("jobs.html",
+                           queues=util.get_job_queue_names,
                            states=util.STATES)
+
+@APP.route("/defs")
+def defs():
+    "show job definitions"
+    return render_template("defs.html")
 
 # FIXME get_all_job_info gets called twice when page loads - can this be avoided?
 # (once in get_queue_table_data and once in get_job_table_data)
@@ -61,8 +89,9 @@ def get_job_table_data():
 
 @APP.route("/get_jobdef_table_data", methods=['GET'])
 def get_jobdef_table_data():
+    nextToken = request.args.get("nextToken")
     "route for populating job definition table"
-    return jsonify(util.get_job_definition_table())
+    return jsonify(util.get_job_definition_table(nextToken=nextToken))
 
 @APP.route('/describe_queue', methods=['GET'])
 def describe_queue():

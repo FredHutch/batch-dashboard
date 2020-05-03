@@ -1,6 +1,7 @@
 "utilities"
 
 import datetime
+import multiprocessing
 import time
 
 import boto3
@@ -25,22 +26,79 @@ def unix_time_millis(dt):
     return int((dt - epoch).total_seconds() * 1000.0)
 
 
+def get_all_job_info_workhorse(tup):
+    "parallelizeable function"
+    return tup, len(do_paginated_batch_operation("list_jobs", "jobSummaryList", dict(jobQueue=tup[0], jobStatus=tup[1])))
+
+def get_job_queue_names():
+    "get job queue names"
+    queues = do_paginated_batch_operation("describe_job_queues", "jobQueues")
+    return sorted([x['jobQueueName'] for x in queues])
+
+
 def get_all_job_info():
     "get a list of all jobs on all queues in all states"
     queues = do_paginated_batch_operation("describe_job_queues", "jobQueues")
+    qnames = []
     jobinfo = []
+    queues_dict = {}
+
     # TODO sort by queue name?
     for queue in queues:
-        qname = queue["jobQueueName"]
         if queue["state"] == "DISABLED" or not queue["status"] == "VALID":
             continue
-        queueinfo = {}
+        qname = queue['jobQueueName']
+        qnames.append(qname)
+        queues_dict[qname] = queue
+    qns = qnames * len(STATES)
+    sts = STATES * len(qns)
+    tups = zip(qns,sts)
+    ltups = list(set(tups))    
+
+    print("before pool")
+    with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+        res = pool.map(get_all_job_info_workhorse, ltups)
+    print("after pool")
+
+    # import IPython;IPython.embed()
+
+    rows = []
+    
+    print("len of qnames is {}".format(len(qnames)))
+    for queue in qnames:
+        row = []
+        row.append(queue)
+        items_for_this_queue = [x for x in res if x[0][0] == queue]
+        print("the length of items_for_this_queue is {}".format(len(items_for_this_queue)))
+        # print("a q")
+        # for item in items_for_this_queue:
+        #     # print("a item")
+        #     info = {}
+        info = {}
         for state in STATES:
-            queueinfo[state] = do_paginated_batch_operation(
-                "list_jobs", "jobSummaryList", dict(jobQueue=qname, jobStatus=state)
-            )
-        jobinfo.append(dict(queue_name=qname, info=queueinfo, queue=queue))
-    return jobinfo
+            # print("a state")
+            item_for_this_state = [x for x in items_for_this_queue if x[0][1] == state][0][1]
+            info[state] = item_for_this_state
+            row.append(item_for_this_state)
+            print("item for this state is")
+            print(item_for_this_state)
+        rows.append(row)
+        jobinfo.append(dict(queue_name=queue, info=info))
+
+    # import IPython;IPython.embed()
+    # for item in res:
+    #     tup, info = item
+    #     (qname, state) = tup
+    #     jobinfo.append(dict(queue_name=qname, info=info, queue=queues_dict[qname]))
+    
+        # queueinfo = {}
+        # for state in STATES:
+        #     queueinfo[state] = do_paginated_batch_operation(
+        #         "list_jobs", "jobSummaryList", dict(jobQueue=qname, jobStatus=state)
+        #     )
+        # jobinfo.append(dict(queue_name=qname, info=queueinfo, queue=queue))
+    # return jobinfo
+    return rows
 
 
 def do_paginated_batch_operation(operation, wanted_part, args=None):
@@ -85,8 +143,9 @@ def get_compute_environment_table():
         row.append(env["computeResources"]["desiredvCpus"])
         row.append(env["computeResources"]["maxvCpus"])
         out.append(row)
-    outdict = dict(data=out)
-    return outdict
+    # outdict = dict(data=out)
+    # return outdict
+    return out
 
 
 def get_job_table(info):
@@ -121,9 +180,14 @@ def get_job_table(info):
     return outdict
 
 
-def get_job_definition_table():
+def get_job_definition_table(maxResults=20, nextToken=None):
     "get job definitions in table form"
-    jobdefs = do_paginated_batch_operation("describe_job_definitions", "jobDefinitions")
+    if nextToken is None:
+        nextToken = ''
+    # jobdefs = do_paginated_batch_operation("describe_job_definitions", "jobDefinitions")
+    res=BATCH.describe_job_definitions(maxResults=maxResults, nextToken=nextToken)
+    jobdefs = res['jobDefinitions']
+    # TODO do we still want to sort now that we are paginating?
     jobdefs = sorted(
         jobdefs, key=lambda x: (x["jobDefinitionName"].lower(), -x["revision"])
     )
@@ -136,7 +200,7 @@ def get_job_definition_table():
         row.append(jobdef["containerProperties"]["memory"])
         row.append(jobdef["containerProperties"]["image"])
         out.append(row)
-    return dict(data=out)
+    return dict(data=out, nextToken=res['nextToken'])
 
 
 # def do_paginated_batch_operation(operation, wanted_part, args=None):

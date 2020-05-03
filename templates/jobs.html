@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Queues - Dashboard{% endblock %}
+{% block title %}Jobs - Dashboard{% endblock %}
 {% block pagejs %}
 <script type="text/javascript" charset="utf8" src="/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/js/buttons.flash.min.js"></script>
@@ -16,15 +16,11 @@
 <script type="text/javascript" charset="utf8" src="/js/common.js"></script>
 <script type="text/javascript">
   $(function() {
-    $("#queue_summary_table").DataTable();
-    console.log( "ready!" );
-});
+    $("#job_table").DataTable();
+  });
 </script>
-
 {% endblock %}
 {% block content %}
-
-
 
 <!-- default value for display is 'inline' -->
 <button id="myButton" style="display: none;">pressme</button>
@@ -36,34 +32,54 @@
 </div>
 
 
-<h2 id="queues_header">Queues</h2>
 
-<!-- <div style="float: right; padding: 5px;">
-  <img id="reload_queue_table" src="/images/refresh.png" height="30" width="30" title="reload data" />
-</div> -->
 
-<table id="queue_summary_table" class="display" style="float: none">
+<h2 id="jobs_header">Jobs</h2>
+
+<div>
+  <input id="job_id_search" placeholder="Search by Job ID" size="50"></input>
+  <button id="job_id_search_button" type="button" class="btn btn-primary">Search</button>
+</div>
+<!--
+<div style="float: right; padding: 5px;">
+  <img id="reload_job_table" src="/images/refresh.png" height="30" width="30" title="reload data" />
+</div>
+-->
+
+<table id="job_table" class="display" style="float: none">
   <thead>
     <tr>
-      <th>Name</th>
-      <th>SUBMITTED</th>
-      <th>PENDING</th>
-      <th>RUNNABLE</th>
-      <th>STARTING</th>
-      <th>RUNNING</th>
-      <th>FAILED</th>
-      <th>SUCCEEDED</th>
+      <th>Queue</th>
+      <th>Job ID</th>
+      <th>Job Name</th>
+      <th>Status</th>
+      <th>Created at</th>
+      <th>Started at</th>
+      <th>Run time</th>
     </tr>
   </thead>
-  <tbody>
-    {% for row in qinfo %}
-      <tr>
-        {% for item in row %}
-          <td>{{ item }}</td>
-        {% endfor %}
-      </tr>
-    {% endfor %}
-  </tbody>
+
+  <tfoot>
+    <tr>
+      <th>
+        <select id="queue_filter">
+        </select>
+      </th>
+      <th></th>
+      <th></th>
+      <th>
+        <select id="state_filter">
+          <option>No Filter</option>
+          {% for state in states %}
+          <option>{{state}}</option>
+          {% endfor %}
+        </select>
+      </th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </tfoot>
 </table>
 
 
@@ -76,7 +92,5 @@
     Hutch]</a> |
   <a target="_blank" href="https://github.com/FredHutch/batch-dashboard">[Code/Report an Issue]</a>
 </p>
-
-
 
 {% endblock %}

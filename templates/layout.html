@@ -27,6 +27,17 @@
 </head>
 
 <body>
+
+  <h1>AWS Batch Dashboard</h1>
+
+  <ul>
+    <li><a href="/">Queues</a></li> {# TODO: change url to / #}
+    <li><a href="/envs">Compute Environments</a></li>
+    <li><a href="/jobs">Jobs</a></li>
+    <li><a href="/defs">Job Definitions</a></li>
+  </ul>
+  
+
   <div id="content">{% block content %}{% endblock %}</div>
 
   <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
@@ -37,6 +48,610 @@
   <script type="text/javascript" charset="utf8"
     src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment-with-locales.min.js"></script>
   <script type="text/javascript" src="/js/timeago.js?timestamp={{timestamp}}"></script>
+
+  {# modals #}
+
+{# "wait" modal #}  
+
+<div id="wait_modal" class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Please wait....</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Please wait while we look up that job definition.</p>
+      </div>
+  </div>
+</div>
+
+{# queue modal #}
+<div class="modal fade" id="queue_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="dialog_queue_header">Queue queueName</h4>
+      </div>
+      <div class="modal-body">
+        <h3>Overview</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Queue name: </b></th>
+            <th align="left" id="dialog_queue_name"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Queue state: </b></th>
+            <th align="left" id="dialog_queue_state"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Priority: </b></th>
+            <th align="left" id="dialog_queue_priority"></th>
+          </tr>
+        </table>
+
+        <h3>Compute Environments</h3>
+
+        <table id="dialog_queue_env_table" class="paddingBetweenCols dynamicDialogTable">
+          <tr>
+            <th>Order</th>
+            <th>Compute environment</th>
+          </tr>
+        </table>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{# compute environment modal #}
+<div class="modal fade" id="env_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        {#  FIXME this does not close #}
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="dialog_env_header">Compute environment details</h4>
+      </div>
+      <div class="modal-body">
+        <h3>Overview</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Compute environment name:</b></th>
+            <th align="left" id="dialog_env_name"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Compute environment ARN:</b></th>
+            <th align="left" id="dialog_env_arn"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Type:</b></th>
+            <th align="left" id="dialog_env_type"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Status:</b></th>
+            <th align="left" id="dialog_env_status"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>State:</b></th>
+            <th align="left" id="dialog_env_state"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Service role:</b></th>
+            <th align="left" id="dialog_env_service_role"></th>
+          </tr>
+        </table>
+
+        <h2>Compute Resources</h2>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Minimum vCPUs:</b></th>
+            <th align="left" id="dialog_env_minvcpus"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Desired vCPUs:</b></th>
+            <th align="left" id="dialog_env_desiredvcpus"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Maximum vCPUs:</b></th>
+            <th align="left" id="dialog_env_maxvcpus"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Instance types:</b></th>
+            <th align="left" id="dialog_env_instance_types"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Instance role:</b></th>
+            <th align="left" id="dialog_env_instancerole"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Spot fleet role:</b></th>
+            <th align="left" id="dialog_env_spotfleetrole"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>EC2 Keypair:</b></th>
+            <th align="left" id="dialog_env_keypair"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>AMI id:</b></th>
+            <th align="left" id="dialog_env_amiid"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>vpcId:</b></th>
+            <th align="left" id="dialog_env_vpcid"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Subnets:</b></th>
+            <th align="left" id="dialog_env_subnets"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Security Groups:</b></th>
+            <th align="left" id="dialog_env_securitygroups"></th>
+          </tr>
+
+        </table>
+
+
+
+
+
+        <h3>EC2 Tags</h3>
+
+        <table id="dialog_env_tag_table" class="paddingBetweenCols dynamicDialogTable">
+          <tr>
+            <th>Name</th>
+            <th>Value</th>
+          </tr>
+        </table>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_env_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# job modal #}
+<div class="modal fade" id="job_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        {#  FIXME this does not close #}
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="dialog_env_header">Job details</h4>
+      </div>
+      <div class="modal-body">
+
+        <div id="displaying_child_job" style="display: none;">
+          <p style="color: red; font-size: 200%;">
+            Displaying Child Job information
+          </p>
+          <button id="return_to_parent_job">Return to Parent Job</button>
+        </div>
+
+        <h2>Job Status</h2>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Status:</b></th>
+            <th align="left" id="dialog_job_status"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Status reason:</b></th>
+            <th align="left" id="dialog_job_status_reason"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Container message:</b></th>
+            <th align="left" id="dialog_job_container_message"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Created at:</b></th>
+            <th align="left" id="dialog_job_createdat"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Started at:</b></th>
+            <th align="left" id="dialog_job_startedat"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Queue:</b></th>
+            <th align="left" id="dialog_job_queue"></th>
+          </tr>
+        </table>
+
+        <h2>Job Attributes</h2>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Job id:</b></th>
+            <th align="left" id="dialog_job_id"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Job name:</b></th>
+            <th align="left" id="dialog_job_name"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Job Definition:</b></th>
+            <th align="left" id="dialog_job_jobdef"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Depends on:</b></th>
+            <th align="left" id="dialog_job_dependson"></th>
+          </tr>
+
+        </table>
+
+        <div id="array_job_details" style="display: none;">
+          <h2>Array Job</h2>
+
+          <table id="array_job_status_table">
+            <tr>
+              <th>submitted</th>
+              <th>pending</th>
+              <th>runnable</th>
+              <th>starting</th>
+              <th>running</th>
+              <th>failed</th>
+              <th>succeeded</th>
+            </tr>
+            <tr>
+              <td class="child_count" id="child_submitted_count"></td>
+              <td class="child_count" id="child_pending_count"></td>
+              <td class="child_count" id="child_runnable_count"></td>
+              <td class="child_count" id="child_starting_count"></td>
+              <td class="child_count" id="child_running_count"></td>
+              <td class="child_count" id="child_failed_count"></td>
+              <td class="child_count" id="child_succeeded_count"></td>
+
+            </tr>
+          </table>
+
+          <p>&nbsp;</p>
+
+          <table id="array_job_child_table">
+            <tr id="array_job_child_table_header">
+              <th>Job ID</th>
+              <th>Job Name</th>
+              <th>Status</th>
+              <th>Created At</th>
+            </tr>
+            <tr id="job_child_status">
+            </tr>
+          </table>
+        </div>
+
+
+        <h2>Attempts</h2>
+
+        <table id="dialog_job_attempts" class="paddingBetweenCols dynamicDialogTable">
+          <thead>
+            <tr>
+              <th>Attempts</th>
+              <th>Exit code</th>
+              <th>Start time</th>
+              <th>End time</th>
+          </thead>
+
+          <tbody>
+
+          </tbody>
+        </table>
+
+        <h2>Resource requirements</h2>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Job role:</b></th>
+            <th align="left" id="dialog_job_role"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Container image:</b></th>
+            <th align="left" id="dialog_job_containerimage"></th>
+          </tr>
+        </table>
+
+
+
+        <h2>Environment</h2>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Command:</b></th>
+            <th align="left" class="breakMe" id="dialog_job_command"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>vCPUs:</b></th>
+            <th align="left" id="dialog_job_vcpus"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Memory:</b></th>
+            <th align="left" id="dialog_job_memory"></th>
+          </tr>
+
+        </table>
+
+        <h2>Environment variables</h2>
+
+        <table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_job_envvars">
+          <thead>
+            <tr>
+              <th align="right">Name</th>
+              <th align="left">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+
+          {#
+  <tr>
+    <th align="right"><b></b></th> ## key
+    <th align="left"></th> ## value
+  </tr>
+#}
+        </table>
+
+
+        <h2>Parameters</h2>
+
+        <table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_job_parameters">
+          <thead>
+            <tr>
+              <th align="right">Name</th>
+              <th align="left">Value</th>
+            </tr>
+
+          </thead>
+          <tbody>
+          </tbody>
+          {#
+  <tr>
+    <th align="right"><b></b></th> ## key
+    <th align="left"></th> ## value
+  </tr>
+#}
+        </table>
+
+        <h2>uLimits</h2>
+
+        <table id="dialog_job_ulimits" class="paddingBetweenCols dynamicDialogTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Soft limit</th>
+              <th>Hard limit</th>
+          </thead>
+
+          <tbody>
+
+          </tbody>
+        </table>
+
+
+        <h2>Volumes</h2>
+
+        <table id="dialog_job_volumes" class="paddingBetweenCols dynamicDialogTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Source path</th>
+          </thead>
+
+          <tbody>
+
+          </tbody>
+        </table>
+
+        <h2>Mount points</h2>
+
+        <p><b id="dialog_job_filesystemstatus">{# Read only filesystem #}</b></p>
+
+        <table id="dialog_job_mountpoints" class="paddingBetweenCols dynamicDialogTable">
+          <thead>
+            <tr>
+              <th>Container path</th>
+              <th>Source volume</th>
+              <th>Read only</th>
+          </thead>
+
+          <tbody>
+
+          </tbody>
+        </table>
+
+        <h2>CloudWatch logs</h2>
+
+        <p id="dialog_job_log_link"></p>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_env_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{# job definition modal #}
+<div class="modal fade" id="jobdef_dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close btn btn-default" data-dismiss="modal" aria-label="Close"><span
+            aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Job Definition <span id="dialog_jobdef_header"></span></h4>
+      </div>
+      <div class="modal-body">
+        <h3>Job definition attributes</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Job defninition name : revision: </b></th>
+            <th align="left" id="dialog_jobdef_namerevision"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Job definition ARN: </b></th>
+            <th align="left" id="dialog_jobdef_arn"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Status: </b></th>
+            <th align="left" id="dialog_jobdef_status"></th>
+          </tr>
+        </table>
+
+        <h3>Resource Requirements</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Job role ARN: </b></th>
+            <th align="left" id="dialog_jobdef_jobrolearn"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Image: </b></th>
+            <th align="left" id="dialog_jobdef_image"></th>
+          </tr>
+        </table>
+
+        <h3>Environment</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Command: </b></th>
+            <th class="breakMe" align="left" id="dialog_jobdef_command"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>vCPUs: </b></th>
+            <th align="left" id="dialog_jobdef_vcpus"></th>
+          </tr>
+          <tr>
+            <th align="right"><b>Memory (MB): </b></th>
+            <th align="left" id="dialog_jobdef_memory"></th>
+          </tr>
+        </table>
+
+        <h3>Retry Strategy</h3>
+
+        <table border="0" class="paddingBetweenCols">
+          <tr>
+            <th align="right"><b>Attempts: </b></th>
+            <th align="left" id="dialog_jobdef_attempts"></th>
+          </tr>
+        </table>
+
+
+        <h3>Parameters</h3>
+
+        <table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_parameters">
+          <thead>
+            <tr>
+              <th align="right">Name</th>
+              <th align="left">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+          {#
+  <tr>
+    <th align="right"><b></b></th> ## key
+    <th align="left"></th> ## value
+  </tr>
+#}
+        </table>
+
+
+        <h3>Environment variables</h3>
+
+        <table border="0" class="paddingBetweenCols dynamicDialogTable" id="dialog_jobdef_envvars">
+          <thead>
+            <tr>
+              <th align="right">Name</th>
+              <th align="left">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+          {#
+  <tr>
+    <th align="right"><b></b></th> ## key
+    <th align="left"></th> ## value
+  </tr>
+#}
+        </table>
+
+
+
+        <h3>uLimits</h3>
+
+        <table id="dialog_jobdef_ulimits" class="paddingBetweenCols dynamicDialogTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Soft limit</th>
+              <th>Hard limit</th>
+          </thead>
+
+          <tbody>
+
+          </tbody>
+        </table>
+
+
+        <h3>Volumes</h3>
+
+        <table id="dialog_jobdef_volumes" class="paddingBetweenCols dynamicDialogTable">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Source path</th>
+          </thead>
+
+          <tbody>
+
+          </tbody>
+        </table>
+
+        <h3>Mount points</h3>
+
+        <p><b id="dialog_jobdef_filesystemstatus">{# Read only filesystem #}</b></p>
+
+        <table id="dialog_jobdef_mountpoints" class="paddingBetweenCols dynamicDialogTable">
+          <thead>
+            <tr>
+              <th>Container path</th>
+              <th>Source volume</th>
+              <th>Read only</th>
+          </thead>
+
+          <tbody>
+
+          </tbody>
+        </table>
+
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="dialog_queue_close" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{# end modals #}
+
 
 
   {% block pagejs %}

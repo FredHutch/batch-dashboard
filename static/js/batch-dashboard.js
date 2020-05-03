@@ -56,7 +56,7 @@ $(document).ready(function () {
   // tables
   var queueTable = $('#queue_summary_table').DataTable(
     {
-      "ajax": "/get_queue_table_data",
+      // "ajax": "/get_queue_table_data",
       "columnDefs": [
         {
           "render": function (data, type, row) {
@@ -81,7 +81,7 @@ $(document).ready(function () {
     }
   );
   var jobTable = $('#job_table').DataTable({
-    "ajax": "/get_job_table_data",
+    // "ajax": "/get_job_table_data",
     "columnDefs": [
       {
         "render": function (data, type, row) {

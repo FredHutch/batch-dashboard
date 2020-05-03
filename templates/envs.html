@@ -1,0 +1,153 @@
+{% extends "layout.html" %}
+{% block title %}Compute Environments - Dashboard{% endblock %}
+{% block pagejs %}
+<script type="text/javascript" charset="utf8" src="/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/buttons.flash.min.js"></script>
+<script type="text/javascript" charset="utf8"
+  src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script type="text/javascript" charset="utf8"
+  src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/pdfmake.min.js"></script>
+<script type="text/javascript" charset="utf8"
+  src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.32/vfs_fonts.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/buttons.html5.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/buttons.print.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/js/buttons.bootstrap.js"></script>
+<!-- FIXME eventually remove the timestamp bit from here: -->
+<script type="text/javascript" charset="utf8" src="/js/common.js"></script>
+<script type="text/javascript">
+  $(function() {
+    // $("#comp_env_table").DataTable();
+    var envTable = $('#comp_env_table').DataTable(
+    {
+      // "ajax": "/get_env_table_data",
+      "columnDefs": [
+        {
+          "render": function (data, type, row) {
+            return '<a id="' + data + '" class="compute_environment">' + data + '</a>';
+          },
+          targets: 0
+        }
+      ]
+    }
+  );
+
+  // click event handler for compute environment table
+  $('#comp_env_table').on('click', '.compute_environment', function (event) {
+    console.log("in click handler for compute environment");
+    clearTables();
+    var id = $(event.target).attr('id');
+    $.getJSON("/describe_env", { env_name: id })
+      .done(function (obj) {
+        // console.log( "JSON Data: " +obj );
+        // console.log(JSON.stringify(obj));
+        populateEnvDialog(obj);
+      })
+      .fail(function (jqxhr, textStatus, error) {
+        var err = textStatus + ", " + error;
+        console.log("Request Failed: " + err);
+      });
+  }); // end of click event handler for compute environment table
+
+  var populateEnvDialog = function (obj) {
+    $("#dialog_env_name").html(obj['computeEnvironmentName']);
+    $("#dialog_env_arn").html(obj['computeEnvironmentArn']);
+    $("#dialog_env_type").html(obj['type']);
+    $("#dialog_env_status").html(obj['status']);
+    $("#dialog_env_state").html(obj['state']);
+    $("#dialog_env_service_role").html(obj['serviceRole']);
+    $("#dialog_env_minvcpus").html(obj['computeResources']['minvCpus']);
+    $("#dialog_env_desiredvcpus").html(obj['computeResources']['desiredvCpus']);
+    $("#dialog_env_maxvcpus").html(obj['computeResources']['maxvCpus']);
+    $("#dialog_env_instance_types").html(obj['computeResources']['instanceTypes'].join(", "));
+    $("#dialog_env_instancerole").html(obj['computeResources']['instanceRole']);
+    if (obj['computeResources'].hasOwnProperty('spotIamFleetRole')) {
+      $("#dialog_env_spotfleetrole").html(obj['computeResources']['spotIamFleetRole']);
+    }
+    if (obj['computeResources'].hasOwnProperty('ec2KeyPair')) {
+      $("#dialog_env_keypair").html(obj['computeResources']['ec2KeyPair']);
+    }
+    if (obj['computeResources'].hasOwnProperty('imageId')) {
+      $("#dialog_env_amiid").html(obj['computeResources']['imageId']);
+    }
+    // leaving VPC alone for now. TODO fix
+    $("#dialog_env_subnets").html(obj['computeResources']['subnets'].join(", "));
+    $("#dialog_env_securitygroups").html(obj['computeResources']['securityGroupIds'].join(", "));
+
+    // Tags
+    var tags = obj['computeResources']['tags'];
+    for (var key in tags) {
+      var value = tags[key];
+      var html = "<tr><td>" + key + "</td><td>" + value + "</td></tr>\n";
+      // FIXME what about making this a DataTable and appending data to it instead
+      // of appending html?
+      $("#dialog_env_tag_table").append(html);
+    }
+    $("#env_dialog").modal();
+
+  }
+
+
+});
+</script>
+
+{% endblock %}
+{% block content %}
+
+
+
+
+<!-- default value for display is 'inline' -->
+<button id="myButton" style="display: none;">pressme</button>
+
+<div id="message"
+  style="z-index: 9999; position : fixed; top: 0; right: 20%; padding: 5px 0 0 5px; height: 140px; width: 300px;">
+  <div id="inner-message" style="display: none;" class="alert alert-info">
+  </div>
+</div>
+
+
+
+
+<h2 id="compute_environments_header">Compute Environments</h2>
+
+<!-- <div style="float: right; padding: 5px;">
+  <img id="reload_env_table" src="/images/refresh.png" height="30" width="30" title="reload data" />
+</div> -->
+
+
+<table id="comp_env_table" class="display" style="float: none">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Minimum vCPUs</th>
+      <th>Desired vCPUs</th>
+      <th>Maximum vCPUs</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in envs %}
+      <tr>
+        {% for item in row %}
+          <td>
+            {{ item }}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+
+<div id="log" style="display: none;"></div>
+
+<p>&nbsp;</p>
+
+<p>
+  <a target="_blank" href="https://fredhutch.github.io/aws-batch-at-hutch-docs/">[Documentation for AWS Batch at Fred
+    Hutch]</a> |
+  <a target="_blank" href="https://github.com/FredHutch/batch-dashboard">[Code/Report an Issue]</a>
+</p>
+
+{% endblock %}
