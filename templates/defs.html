@@ -16,8 +16,7 @@
 <script type="text/javascript" charset="utf8" src="/js/common.js"></script>
 <script type="text/javascript">
 
-var nextToken = '';
-var previousToken = '';
+var jdStack = [''];
 
 Object.defineProperty(String.prototype, 'hashCode', {
   value: function() {
@@ -50,29 +49,35 @@ $(function() {
       ]
     });
     
-  
+  var getShortStack = function() {
+    var shortStack = [];
+    for (var i = 0;i < jdStack.length; i++) {
+      shortStack.push(jdStack[i].hashCode());
+    }
+    return shortStack;
+  }
+
   var populateJobDefTable = function(clickedOnNext=true) {
     console.log("populating, clickedOnNext = " + clickedOnNext);
-    if ((!clickedOnNext) && previousToken.hashCode() == 0) {
+    console.log("stack length is "+ jdStack.length);
+    if ((!clickedOnNext) && (jdStack.length <= 1)) {
       console.log("cant go back that far");
       return;
     }
+    console.log("stack is: " + getShortStack());
     url = "/get_jobdef_table_data?nextToken=" 
-    var token = clickedOnNext ? nextToken : previousToken;
+    var token = clickedOnNext ? jdStack[jdStack.length-1] : jdStack[jdStack.length-2];
     token = token.replace(/\+/g, "%2b");
     url += token;
     jQuery.getJSON({
       url: url,
       success: function(data) {
         if (clickedOnNext) {
-          previousToken = nextToken;
-          nextToken = data['nextToken']; // TODO what if user clicked previous?
+          jdStack.push(data['nextToken']);
         } else {
-          nextToken = previousToken;
-          previousToken = data['nextToken'];
+          jdStack.pop();
         }
-        console.log("previousToken: " + previousToken.hashCode());
-        console.log("    nextToken: " + nextToken.hashCode());
+        console.log("in success, shortStack is " + getShortStack());
 
         // first delete rows
         jobDefTable.rows().remove();
