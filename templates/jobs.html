@@ -12,9 +12,13 @@
 <script type="text/javascript" charset="utf8" src="/js/buttons.html5.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/js/buttons.print.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/js/buttons.bootstrap.js"></script>
-<!-- FIXME eventually remove the timestamp bit from here: -->
 <script type="text/javascript" charset="utf8" src="/js/common.js"></script>
 <script type="text/javascript">
+
+  var jobStack = [''];
+  // var jobModels = {};
+
+
   $(function() {
     var jobTable = $("#job_table").DataTable({
     // "ajax": "/get_job_table_data",
@@ -53,6 +57,114 @@
       }
     ]
   });  
+
+  var getJobRows = function(jobQueue, data) {
+    var rows = [];
+    for (let job of data) {
+      var row = [];
+      row.push(jobQueue);
+      row.push(job['jobId']);
+      row.push(job['jobName']);
+      row.push(job['status']);
+      row.push(job['createdAt']);
+      row.push(job.hasOwnProperty('startedAt') ? job['startedAt'] : null);
+      row.push(getRunTime(job));
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  var showJobs = function() {
+    console.log("in showJobs()");
+
+    var jobStatus = $(".job-status.active").text();
+    var jobQueue = $("#queue_dropdown").val();
+    console.log("jobStatus is " + jobStatus + ", jobQueue is " + jobQueue);
+    var url = "/list_jobs?jobQueue=" + jobQueue + "&jobStatus=" + jobStatus + "&nextToken=";
+    console.log("url is");
+    console.log(url);
+
+    jQuery.getJSON({
+      url: url,
+      success: function(data) {
+        var rows = getJobRows(jobQueue, data['jobSummaryList']);
+        console.log("got " + rows.length + " rows back....");
+        jobTable.rows().remove();
+        jobTable.rows.add(rows).draw();
+
+      }
+    }).fail(function(){
+      console.log("showJobs() fail");
+    });
+  }
+
+  showJobs();
+
+  //click event handler for previous button
+  $(".previous_button").on('click', function(event){
+    console.log("you clicked previous");
+    getAnotherPage(false);
+  });
+
+  //click event handler for next button
+  $(".next_button").on('click', function(event){
+    console.log("you clicked next");
+    getAnotherPage();
+  });
+
+  var getAnotherPage = function(clickedOnNext=true) {
+    console.log("in getAnotherPage(), clickedOnNext = " + clickedOnNext);
+    console.log("stack length is "+ jobStack.length);
+    if ((!clickedOnNext) && (jobStack.length <= 1)) {
+      console.log("cant go back that far");
+      return;
+    }
+    console.log("stack is: " + getShortStack());
+    //dante
+    var jobStatus = $(".job-status.active").text();
+    var jobQueue = $("#queue_dropdown").val();
+    console.log("jobStatus is " + jobStatus + ", jobQueue is " + jobQueue);
+    var url = "/list_jobs?jobQueue=" + jobQueue + "&jobStatus=" + jobStatus + "&nextToken=";
+
+    var token = clickedOnNext ? jobStack[jobStack.length-1] : jobStack[jobStack.length-2];
+    token = token.replace(/\+/g, "%2b");
+    url += token;
+    jQuery.getJSON({
+      url: url,
+      success: function(data) {
+        if (clickedOnNext) {
+          if (data.hasOwnProperty('nextToken')) {
+            jobStack.push(data['nextToken']);
+          }
+        } else {
+          jobStack.pop();
+        }
+        console.log("in success, shortStack is " + getShortStack());
+        var rows = getJobRows(jobQueue, data['jobSummaryList']);
+        console.log("got " + rows.length + " rows back....");
+        jobTable.rows().remove();
+        jobTable.rows.add(rows).draw();
+      }
+    });
+  }
+
+
+
+  // job status buttons event handler
+  $(".job-status").on('click', function() {
+    console.log( $( this ).text() );
+    // 
+    $(".job-status").removeClass('active');
+    $(this).button('toggle');
+    showJobs();
+  });
+
+  // queue dropdown event handler
+  $('#queue_dropdown').change(function(){ 
+    var value = $(this).val();
+    console.log("change to queue dropdown, new value is " + value);
+    showJobs();
+  });
 
 
   var getRunTime = function(data) {
@@ -254,10 +366,7 @@
     }
 
     $("#job_dialog").modal();
-
-
   }
-
 
 
 }); // end ready function
@@ -294,11 +403,33 @@
   </select>
 </div>
 
+
+<div>
+  <div><b>Status</b></div>
+  <div>
+    <button id="submitted-status"  type="button" class="btn btn-light job-status">submitted</button>
+    <button id="pending-status"  type="button" class="btn btn-light job-status">pending</button>
+    <button id="runnable-status"  type="button" class="btn btn-light job-status">runnable</button>
+    <button id="starting-status"  type="button" class="btn btn-light job-status">starting</button>
+    <button id="running-status"  type="button" class="btn btn-light job-status active">running</button>
+    <button id="succeeded-status"  type="button" class="btn btn-light job-status">succeeded</button>
+    <button id="failed-status"  type="button" class="btn btn-light job-status">failed</button>
+
+  </div>
+</div>
+
 <!--
 <div style="float: right; padding: 5px;">
   <img id="reload_job_table" src="/images/refresh.png" height="30" width="30" title="reload data" />
 </div>
 -->
+
+<div>
+  <button type="button" class="btn btn-info previous_button">Previous</button>
+  <button type="button" class="btn btn-info next_button">Next</button>
+</div>
+
+
 
 <table id="job_table" class="display" style="float: none">
   <thead>
@@ -335,6 +466,12 @@
     </tr>
   </tfoot>
 </table>
+
+
+<div>
+  <button type="button" class="btn btn-info previous_button">Previous</button>
+  <button type="button" class="btn btn-info next_button">Next</button>
+</div>
 
 
 <div id="log" style="display: none;"></div>

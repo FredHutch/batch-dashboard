@@ -69,6 +69,17 @@ def defs():
 # FIXME get_all_job_info gets called twice when page loads - can this be avoided?
 # (once in get_queue_table_data and once in get_job_table_data)
 
+@APP.route("/list_jobs", methods=['GET'])
+def list_jobs():
+    "list jobs for queue and status"
+    nextToken = request.args.get("nextToken")
+    jobQueue = request.args.get("jobQueue")
+    jobStatus = request.args.get("jobStatus")
+    return jsonify(util.list_jobs(nextToken, jobQueue, jobStatus))
+
+
+
+
 @APP.route("/get_queue_table_data", methods=['GET'])
 def get_queue_table_data():
     "route for populating queue table"
@@ -89,8 +100,8 @@ def get_job_table_data():
 
 @APP.route("/get_jobdef_table_data", methods=['GET'])
 def get_jobdef_table_data():
-    nextToken = request.args.get("nextToken")
     "route for populating job definition table"
+    nextToken = request.args.get("nextToken")
     return jsonify(util.get_job_definition_table(nextToken=nextToken))
 
 @APP.route('/describe_queue', methods=['GET'])

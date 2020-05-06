@@ -35,6 +35,15 @@ def get_job_queue_names():
     queues = do_paginated_batch_operation("describe_job_queues", "jobQueues")
     return sorted([x['jobQueueName'] for x in queues])
 
+def list_jobs(nextToken, jobQueue, jobStatus):
+    "list jobs by queue and status (paginated)"
+    res = BATCH.list_jobs(jobQueue=jobQueue,
+                          jobStatus=jobStatus,
+                          maxResults=20,
+                          nextToken=nextToken)
+    del res['ResponseMetadata']
+    return res
+
 
 def get_all_job_info():
     "get a list of all jobs on all queues in all states"
