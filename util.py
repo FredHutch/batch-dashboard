@@ -59,10 +59,11 @@ def get_all_job_info():
         qname = queue['jobQueueName']
         qnames.append(qname)
         queues_dict[qname] = queue
-    qns = qnames * len(STATES)
-    sts = STATES * len(qns)
-    tups = zip(qns,sts)
-    ltups = list(set(tups))    
+
+    ltups = []
+    for qname in qnames:
+        for state in STATES:
+            ltups.append((qname, state))
 
     print("before pool")
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
